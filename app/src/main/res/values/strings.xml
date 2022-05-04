@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Gobblet</string>
+    <string name="ic_pieces_versus">pieces_versus</string>
+    <string name="vs">VS</string>
+    <string name="ic_volume">volume</string>
+    <string name="single_player">Single Player</string>
+    <string name="two_players">Two Players</string>
 </resources>
