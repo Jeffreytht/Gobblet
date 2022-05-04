@@ -10,7 +10,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Gobblet">
         <activity
-            android:name=".Home"
+            android:name=".ui.GobbletActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.HomeActivity"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
