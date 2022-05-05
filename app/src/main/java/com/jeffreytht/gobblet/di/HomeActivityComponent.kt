@@ -4,7 +4,7 @@ import com.jeffreytht.gobblet.ui.HomeActivity
 import dagger.BindsInstance
 import dagger.Component
 
-@Component
+@Component(modules = [HomeActivityModule::class])
 interface HomeActivityComponent {
     fun inject(homeActivity: HomeActivity)
 
