@@ -1,8 +1,8 @@
 package com.jeffreytht.gobblet.ui
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +13,7 @@ import com.jeffreytht.gobblet.PeacesAdapter
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
 
-class GobbletActivity : Activity() {
+class GobbletActivity : AppCompatActivity() {
     companion object {
         const val GOBBLET_MODE = "GOBBLET_MODE"
         const val PEACES_COUNT = 12
