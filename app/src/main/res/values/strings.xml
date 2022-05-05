@@ -5,4 +5,6 @@
     <string name="ic_volume">volume</string>
     <string name="single_player">Single Player</string>
     <string name="two_players">Two Players</string>
+    <string name="your_turn">Your turn</string>
+    <string name="peace">Peace</string>
 </resources>
