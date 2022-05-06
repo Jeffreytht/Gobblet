@@ -1,28 +1,48 @@
 package com.jeffreytht.gobblet
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.databinding.PeaceRowItemBinding
 
-class PeacesAdapter(private val dataset: Array<Int>) :
+class PeacesAdapter(
+    private val dataset: ArrayList<Pair<Int, Float>>,
+    private val aspectRatio: Float,
+    private val onLongClick: (view: View) -> Boolean
+) :
     RecyclerView.Adapter<PeacesAdapter.PeaceViewHolder>() {
 
-    class PeaceViewHolder(private val binding: PeaceRowItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun setImageResource(@DrawableRes res: Int) {
-            binding.peaceImage = res
+    class PeaceViewHolder(
+        private val binding: PeaceRowItemBinding,
+        private val parentHeight: Int,
+        onLongClick: (view: View) -> Boolean
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.peaceImageView.setOnLongClickListener(onLongClick)
+        }
+
+        fun setImage(imageData: Pair<Int, Float>, aspectRatio: Float) {
+            binding.peaceImage = imageData.first
+            binding.peaceImageView.layoutParams.apply {
+                height = ((parentHeight - 16) * imageData.second).toInt()
+                width = (height * aspectRatio).toInt()
+            }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PeaceViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return PeaceViewHolder(PeaceRowItemBinding.inflate(inflater, parent, false))
+        return PeaceViewHolder(
+            PeaceRowItemBinding.inflate(inflater, parent, false),
+            parent.measuredHeight,
+            onLongClick
+        )
     }
 
     override fun onBindViewHolder(holder: PeaceViewHolder, position: Int) {
-        holder.setImageResource(dataset[position])
+        holder.setImage(dataset[position], aspectRatio)
     }
 
     override fun getItemCount(): Int = dataset.size
