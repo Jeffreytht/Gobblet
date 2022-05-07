@@ -1,5 +1,6 @@
 package com.jeffreytht.gobblet.ui
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Point
@@ -7,42 +8,51 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
 import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.databinding.Observable
-import androidx.databinding.PropertyChangeRegistry
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
-import com.jeffreytht.gobblet.GridAdapter
-import com.jeffreytht.gobblet.PeacesAdapter
-import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
+import com.jeffreytht.gobblet.di.DaggerGridAdapterComponent
+import com.jeffreytht.gobblet.di.DaggerPeaceAdapterComponent
+import com.jeffreytht.gobblet.model.Grid
+import com.jeffreytht.gobblet.model.Peace
+import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
+import com.jeffreytht.gobblet.model.Peace.Companion.RED
+import com.jeffreytht.gobblet.util.PeaceHandler
+import com.jeffreytht.gobblet.util.ResourcesProvider
 
-class GobbletActivityViewModel(private val row: Int, private val col: Int) : ViewModel(),
-    Observable {
+class GobbletActivityViewModel(
+    private val row: Int,
+    private val col: Int,
+    private val resourcesProvider: ResourcesProvider
+) : ViewModel(), PeaceHandler {
     companion object {
         const val PEACES_COUNT = 12
         const val SCALE_DIFF = 0.25f
     }
 
-    private val callbacks = PropertyChangeRegistry()
-
     fun init(binding: ActivityGobbletBinding, context: Context) {
         binding.adViewGobblet.loadAd(AdRequest.Builder().build())
-        initializePeaces(
-            binding.recyclerViewRedPeaces,
-            R.drawable.ic_red_large_peace,
-            context
-        )
-        initializePeaces(
-            binding.recyclerViewGreenPeaces,
-            R.drawable.ic_green_large_peace,
-            context
-        )
-        binding.gobbletRecyclerView.adapter = GridAdapter(row = row, col = col)
-        binding.gobbletRecyclerView.layoutManager =
+        initializePeaces(binding.recyclerViewRedPeaces, RED, context)
+        initializePeaces(binding.recyclerViewGreenPeaces, GREEN, context)
+        initializeGrids(binding.gobbletRecyclerView, context)
+    }
+
+    private fun initializeGrids(
+        recyclerView: RecyclerView,
+        context: Context
+    ) {
+        recyclerView.adapter = DaggerGridAdapterComponent
+            .builder()
+            .withPeaceHandler(this)
+            .withRow(row)
+            .withCol(col)
+            .build()
+            .providesGridAdapter()
+
+        recyclerView.layoutManager =
             object : GridLayoutManager(context, col) {
                 override fun canScrollHorizontally(): Boolean = false
                 override fun canScrollVertically(): Boolean = false
@@ -51,51 +61,32 @@ class GobbletActivityViewModel(private val row: Int, private val col: Int) : Vie
 
     private fun initializePeaces(
         recyclerView: RecyclerView,
-        @DrawableRes resId: Int,
+        @Peace.Color color: Int,
         context: Context
     ) {
-        val dataset = ArrayList<Pair<Int, Float>>()
-
-        var scale = 1.25f
-        for (i in 0 until PEACES_COUNT) {
-            if (i % 3 == 0) {
-                scale -= SCALE_DIFF
-            }
-            dataset.add(Pair(resId, scale))
-        }
-
         recyclerView.layoutManager =
             LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-
-        recyclerView.adapter = PeacesAdapter(
-            dataset,
-            this::onLongClick
-        )
+        recyclerView.adapter = DaggerPeaceAdapterComponent
+            .builder()
+            .withActivity(context as Activity)
+            .withPeaceHandler(this)
+            .withColor(color)
+            .build()
+            .providesPeacesAdapter()
     }
 
-    private fun onLongClick(view: View): Boolean {
+    override fun onLongClick(peace: Peace, imageView: ImageView): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val myShadow =
-                (view as ImageView).drawable.constantState?.newDrawable()?.mutate()?.let {
-                    PeaceShadow(it, view)
-                }
-
-            view.startDragAndDrop(null, myShadow, null, 0)
-            return true
+            val myShadow = resourcesProvider.getDrawable(peace.resId)?.let {
+                PeaceShadow(it, imageView)
+            }
+            imageView.startDragAndDrop(null, myShadow, peace, 0)
         }
-        return false
+        return true
     }
 
-    override fun addOnPropertyChangedCallback(callback: Observable.OnPropertyChangedCallback?) {
-        callbacks.add(callback)
-    }
+    override fun onDropToGrid(peace: Peace, grid: Grid) {
 
-    override fun removeOnPropertyChangedCallback(callback: Observable.OnPropertyChangedCallback?) {
-        callbacks.remove(callback)
-    }
-
-    private fun notifyPropertyChanged() {
-        callbacks.notifyCallbacks(this, 0, null)
     }
 }
 
