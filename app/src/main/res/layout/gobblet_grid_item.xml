@@ -14,9 +14,9 @@
         android:background="@drawable/bg_grid_border">
 
         <ImageView
-            android:id="@+id/peace"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/peaceImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:contentDescription="@string/peace"
             app:layout_constraintBottom_toBottomOf="@id/grid"
             app:layout_constraintEnd_toEndOf="@id/grid"

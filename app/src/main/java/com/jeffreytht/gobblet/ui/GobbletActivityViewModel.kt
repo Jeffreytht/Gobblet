@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
+import com.jeffreytht.gobblet.adapter.GridAdapter
+import com.jeffreytht.gobblet.adapter.PeacesAdapter
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
 import com.jeffreytht.gobblet.di.DaggerGridAdapterComponent
 import com.jeffreytht.gobblet.di.DaggerPeaceAdapterComponent
@@ -33,6 +35,9 @@ class GobbletActivityViewModel(
         const val SCALE_DIFF = 0.25f
     }
 
+    private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
+    private lateinit var gridAdapter: GridAdapter
+
     fun init(binding: ActivityGobbletBinding, context: Context) {
         binding.adViewGobblet.loadAd(AdRequest.Builder().build())
         initializePeaces(binding.recyclerViewRedPeaces, RED, context)
@@ -44,13 +49,16 @@ class GobbletActivityViewModel(
         recyclerView: RecyclerView,
         context: Context
     ) {
-        recyclerView.adapter = DaggerGridAdapterComponent
+        gridAdapter = DaggerGridAdapterComponent
             .builder()
             .withPeaceHandler(this)
+            .withActivity(context as Activity)
             .withRow(row)
             .withCol(col)
             .build()
             .providesGridAdapter()
+
+        recyclerView.adapter = gridAdapter
 
         recyclerView.layoutManager =
             object : GridLayoutManager(context, col) {
@@ -64,15 +72,18 @@ class GobbletActivityViewModel(
         @Peace.Color color: Int,
         context: Context
     ) {
-        recyclerView.layoutManager =
-            LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        recyclerView.adapter = DaggerPeaceAdapterComponent
+        peacesAdapterMap[color] = DaggerPeaceAdapterComponent
             .builder()
             .withActivity(context as Activity)
             .withPeaceHandler(this)
             .withColor(color)
             .build()
             .providesPeacesAdapter()
+
+        recyclerView.layoutManager =
+            LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+
+        recyclerView.adapter = peacesAdapterMap[color]
     }
 
     override fun onLongClick(peace: Peace, imageView: ImageView): Boolean {
@@ -86,7 +97,8 @@ class GobbletActivityViewModel(
     }
 
     override fun onDropToGrid(peace: Peace, grid: Grid) {
-
+        gridAdapter.addPeace(grid, peace)
+        peacesAdapterMap[peace.color]?.removePeace(peace)
     }
 }
 

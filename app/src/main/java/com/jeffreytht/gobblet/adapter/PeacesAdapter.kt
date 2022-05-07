@@ -31,18 +31,11 @@ class PeacesAdapter(
             }
         }
 
-        private fun getAspectRatio(@DrawableRes resId: Int): Float {
-            val drawable = resourcesProvider.getDrawable(resId)
-            var aspectRatio = 1.0f
-            drawable?.let { aspectRatio = it.intrinsicWidth.toFloat() / it.intrinsicHeight }
-            return aspectRatio
-        }
-
         fun setImage(peace: Peace) {
             binding.peaceImage = peace.resId
             binding.peaceImageView.layoutParams.apply {
                 height = ((parentHeight - 16) * peace.scale).toInt()
-                width = (height * getAspectRatio(peace.resId)).toInt()
+                width = (height * resourcesProvider.getAspectRatio(peace.resId)).toInt()
             }
             binding.peaceImageView.setTag(R.string.peace_tag, peace)
         }
@@ -63,4 +56,10 @@ class PeacesAdapter(
     }
 
     override fun getItemCount(): Int = dataset.size
+
+    fun removePeace(peace: Peace) {
+        val idx = dataset.indexOf(peace)
+        dataset.removeAt(idx)
+        notifyItemRemoved(idx)
+    }
 }

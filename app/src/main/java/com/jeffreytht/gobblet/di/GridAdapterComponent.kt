@@ -1,5 +1,6 @@
 package com.jeffreytht.gobblet.di
 
+import android.app.Activity
 import com.jeffreytht.gobblet.adapter.GridAdapter
 import com.jeffreytht.gobblet.util.PeaceHandler
 import dagger.BindsInstance
@@ -23,6 +24,9 @@ interface GridAdapterComponent {
 
         @BindsInstance
         fun withCol(@Named(COL) col: Int): Builder
+
+        @BindsInstance
+        fun withActivity(activity: Activity): Builder
 
         fun build(): GridAdapterComponent
     }

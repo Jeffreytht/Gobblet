@@ -3,11 +3,14 @@ package com.jeffreytht.gobblet.di
 import com.jeffreytht.gobblet.adapter.GridAdapter
 import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.util.PeaceHandler
+import com.jeffreytht.gobblet.util.ResourcesProvider
 import dagger.Module
 import dagger.Provides
+import java.util.Stack
 import javax.inject.Named
+import kotlin.collections.ArrayList
 
-@Module
+@Module(includes = [UtilModule::class])
 interface GridAdapterModule {
     companion object {
         @Provides
@@ -16,7 +19,7 @@ interface GridAdapterModule {
             for (i in 0 until row) {
                 data.add(ArrayList())
                 for (j in 0 until col) {
-                    data[i].add(Grid(row = i, col = j))
+                    data[i].add(Grid(row = i, col = j, peaces = Stack()))
                 }
             }
             return data
@@ -25,9 +28,10 @@ interface GridAdapterModule {
         @Provides
         fun providesGridAdapter(
             data: ArrayList<ArrayList<Grid>>,
-            peaceHandler: PeaceHandler
+            peaceHandler: PeaceHandler,
+            resourcesProvider: ResourcesProvider
         ): GridAdapter {
-            return GridAdapter(data, peaceHandler)
+            return GridAdapter(data, peaceHandler, resourcesProvider)
         }
     }
 }
