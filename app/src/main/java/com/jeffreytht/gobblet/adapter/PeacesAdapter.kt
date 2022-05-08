@@ -4,12 +4,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.PeaceRowItemBinding
 import com.jeffreytht.gobblet.model.GameInteractor
 import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
+import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 
 class PeacesAdapter(

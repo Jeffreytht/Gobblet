@@ -8,6 +8,7 @@ import com.jeffreytht.gobblet.util.GobbletController
 class ActivityViewModelFactory(
     private val gobbletController: GobbletController
 ) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return HomeActivityViewModel(gobbletController) as T
     }

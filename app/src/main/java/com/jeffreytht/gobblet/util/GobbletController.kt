@@ -1,4 +1,5 @@
 package com.jeffreytht.gobblet.util
+
 import android.content.Intent
 import com.jeffreytht.gobblet.model.GobbletMode
 import com.jeffreytht.gobblet.ui.GobbletActivity

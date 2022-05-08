@@ -20,8 +20,7 @@ import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 
 class GobbletActivityViewModel(
-    row: Int,
-    col: Int,
+    dimension: Int,
     context: Context,
     private val resourcesProvider: ResourcesProvider,
 ) : ViewModel(), PeaceHandler {
@@ -32,8 +31,7 @@ class GobbletActivityViewModel(
 
     private val game = DaggerGameComponent
         .builder()
-        .withRow(row)
-        .withCol(col)
+        .withDimension(dimension)
         .build()
         .provideGame()
 
@@ -82,7 +80,7 @@ class GobbletActivityViewModel(
     ) {
         recyclerView.adapter = gridAdapter
         recyclerView.layoutManager =
-            object : GridLayoutManager(context, game.col) {
+            object : GridLayoutManager(context, game.dimension) {
                 override fun canScrollHorizontally(): Boolean = false
                 override fun canScrollVertically(): Boolean = false
             }

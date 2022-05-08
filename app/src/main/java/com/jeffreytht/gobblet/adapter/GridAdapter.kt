@@ -13,7 +13,6 @@ import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
-import kotlin.collections.ArrayList
 
 class GridAdapter(
     private val data: ArrayList<ArrayList<Grid>>,

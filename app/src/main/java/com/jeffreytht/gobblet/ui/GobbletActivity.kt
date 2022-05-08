@@ -19,8 +19,7 @@ class GobbletActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         DaggerGobbletActivityComponent
             .builder()
-            .withRow(4)
-            .withCol(4)
+            .withDimension(4)
             .withContext(this)
             .withActivity(this)
             .build()

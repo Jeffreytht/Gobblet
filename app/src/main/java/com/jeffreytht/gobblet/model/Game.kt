@@ -5,11 +5,9 @@ import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
 import java.util.Stack
-import kotlin.collections.ArrayList
 
 class Game(
-    val row: Int,
-    val col: Int,
+    val dimension: Int
 ) {
     private val gameInteractors = HashSet<GameInteractor>()
 
@@ -27,7 +25,7 @@ class Game(
         gameInteractors.add(gameInteractor)
     }
 
-    fun isValidMove(peace: Peace, grid: Grid): Boolean {
+    private fun isValidMove(peace: Peace, grid: Grid): Boolean {
         return if (grid.peaces.isEmpty()) {
             true
         } else {
@@ -49,15 +47,83 @@ class Game(
             i.movePeace(peace, grid)
         }
 
+        Log.d("", "move: " + endMove())
         return true
     }
+
+    private fun endMove(): Boolean {
+        // Check row
+        for (i in 0 until dimension) {
+            var gameOver = true
+            for (j in 1 until dimension) {
+                if (grids[i][j - 1].peaces.empty() ||
+                    grids[i][j].peaces.empty() ||
+                    grids[i][j - 1].peaces.peek().color != grids[i][j].peaces.peek().color
+                ) {
+                    gameOver = false
+                    break
+                }
+            }
+            if (gameOver) {
+                return true
+            }
+        }
+
+        // Check col
+        for (i in 0 until dimension) {
+            var gameOver = true
+            for (j in 1 until dimension) {
+                if (grids[j - 1][i].peaces.empty() ||
+                    grids[j][i].peaces.empty() ||
+                    grids[j - 1][i].peaces.peek().color != grids[j][i].peaces.peek().color
+                ) {
+                    gameOver = false
+                    break
+                }
+            }
+            if (gameOver) {
+                return true
+            }
+        }
+
+        // Check diagonal
+        var gameOver = true
+        for (i in 1 until dimension) {
+            if (grids[i - 1][i - 1].peaces.empty() ||
+                grids[i][i].peaces.empty() ||
+                grids[i][i].peaces.peek().color != grids[i - 1][i - 1].peaces.peek().color
+            ) {
+                gameOver = false
+                break
+            }
+        }
+        if (gameOver) {
+            return true
+        }
+
+        // Check diagonal
+        gameOver = true
+        for (i in 1 until dimension) {
+            if (grids[i][dimension - i - 1].peaces.empty() ||
+                grids[i - 1][dimension - i].peaces.empty() ||
+                grids[i][dimension - i - 1].peaces.peek().color !=
+                grids[i - 1][dimension - i].peaces.peek().color
+            ) {
+                gameOver = false
+                break
+            }
+        }
+
+        return gameOver
+    }
+
 
     private fun initPeaces(@Peace.Color color: Int): ArrayList<Peace> {
         val dataset = ArrayList<Peace>()
         var scale = 1.0f
         @Peace.Size var size = Peace.LARGE
         for (i in 0 until GobbletActivityViewModel.PEACES_COUNT) {
-            if (i > 0 && i % 3 == 0) {
+            if (i > 0 && i % (dimension - 1) == 0) {
                 scale -= GobbletActivityViewModel.SCALE_DIFF
                 size--
             }
@@ -75,9 +141,9 @@ class Game(
 
     private fun initGrid(): ArrayList<ArrayList<Grid>> {
         val data = ArrayList<ArrayList<Grid>>()
-        for (i in 0 until row) {
+        for (i in 0 until dimension) {
             data.add(ArrayList())
-            for (j in 0 until col) {
+            for (j in 0 until dimension) {
                 data[i].add(Grid(row = i, col = j, peaces = Stack()))
             }
         }

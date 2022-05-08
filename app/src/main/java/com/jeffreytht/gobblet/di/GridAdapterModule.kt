@@ -6,7 +6,6 @@ import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import dagger.Module
 import dagger.Provides
-import kotlin.collections.ArrayList
 
 @Module(includes = [UtilModule::class])
 interface GridAdapterModule {
