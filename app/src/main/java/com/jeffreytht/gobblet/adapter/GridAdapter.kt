@@ -4,6 +4,7 @@ import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.GobbletGridItemBinding
@@ -20,6 +21,7 @@ class GridAdapter(
     private val resourcesProvider: ResourcesProvider
 ) :
     RecyclerView.Adapter<GridAdapter.GridHolder>(), GameInteractor {
+    private val peacesSet = HashMap<Peace, Grid>()
 
     class GridHolder(
         binding: GobbletGridItemBinding,
@@ -44,22 +46,32 @@ class GridAdapter(
                     else -> event.localState is Peace
                 }
             }
+
+            binding.peaceImageView.setOnLongClickListener {
+                peaceHandler.onLongClick(it.getTag(R.string.peace_tag) as Peace, it as ImageView)
+            }
         }
 
         fun initPeaces(grid: Grid) {
             itemView.setTag(R.string.grid_tag, grid)
-
-            if (grid.peaces.empty()) {
-                return
+            imageView.apply {
+                requestLayout()
+                if (grid.peaces.empty()) {
+                    setImageDrawable(null)
+                    layoutParams.apply {
+                        width = LinearLayout.LayoutParams.MATCH_PARENT
+                        height = LinearLayout.LayoutParams.MATCH_PARENT
+                    }
+                    return
+                }
+                val peace = grid.peaces.peek()
+                layoutParams.apply {
+                    height = ((parentHeight - 16) * peace.scale).toInt()
+                    width = (height * resourcesProvider.getAspectRatio(peace.resId)).toInt()
+                }
+                setImageResource(peace.resId)
+                setTag(R.string.peace_tag, peace)
             }
-            val peace = grid.peaces.peek()
-            imageView.layoutParams.apply {
-                height = ((parentHeight - 16) * peace.scale).toInt()
-                width = (height * resourcesProvider.getAspectRatio(peace.resId)).toInt()
-
-            }
-            imageView.requestLayout()
-            imageView.setImageResource(peace.resId)
         }
     }
 
@@ -84,7 +96,14 @@ class GridAdapter(
     private val col: Int = if (data.isEmpty()) 0 else data.first().size
 
     override fun movePeace(peace: Peace, grid: Grid) {
-        data[grid.row][grid.col].peaces.add(peace)
+        peacesSet[peace]?.let {
+            it.peaces.pop()
+            notifyItemChanged(it.row * col + it.col)
+        }
+        with(grid) {
+            peaces.push(peace)
+            peacesSet[peace] = this
+        }
         notifyItemChanged(grid.row * col + grid.col)
     }
 }
