@@ -1,6 +1,6 @@
 package com.jeffreytht.gobblet.di
 
-import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import com.jeffreytht.gobblet.di.GobbletActivityComponent.Companion.COL
@@ -11,27 +11,28 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Named
 
-@Module(includes = [UtilModule::class])
+@Module
 interface GobbletActivityModule {
     companion object {
         @Provides
         fun providesGobbletActivityViewModel(
             gobbletActivity: GobbletActivity,
+            context: Context,
             @Named(ROW) row: Int,
             @Named(COL) col: Int,
             resourcesProvider: ResourcesProvider
         ): GobbletActivityViewModel {
             return ViewModelProvider(
                 gobbletActivity,
-                GobbletActivityViewModelFactory(row, col, resourcesProvider)
+                GobbletActivityViewModelFactory(
+                    row,
+                    col,
+                    context,
+                    resourcesProvider
+                )
             ).get(
                 GobbletActivityViewModel::class.java
             )
-        }
-
-        @Provides
-        fun providesActivity(gobbletActivity: GobbletActivity): Activity {
-            return gobbletActivity
         }
     }
 }

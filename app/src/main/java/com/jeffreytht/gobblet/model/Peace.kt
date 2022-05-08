@@ -14,10 +14,10 @@ data class Peace(
     val scale: Float
 ) : Parcelable {
     companion object {
-        const val LARGE = 0
-        const val MEDIUM = 1
-        const val SMALL = 2
-        const val EXTRA_SMALL = 3
+        const val EXTRA_SMALL = 0
+        const val SMALL = 1
+        const val MEDIUM = 2
+        const val LARGE = 3
         const val GREEN = 0
         const val RED = 1
     }

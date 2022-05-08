@@ -1,21 +1,15 @@
 package com.jeffreytht.gobblet.ui
 
-import android.app.Activity
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Point
-import android.graphics.drawable.Drawable
 import android.os.Build
-import android.view.View
 import android.widget.ImageView
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
-import com.jeffreytht.gobblet.adapter.GridAdapter
-import com.jeffreytht.gobblet.adapter.PeacesAdapter
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
+import com.jeffreytht.gobblet.di.DaggerGameComponent
 import com.jeffreytht.gobblet.di.DaggerGridAdapterComponent
 import com.jeffreytht.gobblet.di.DaggerPeaceAdapterComponent
 import com.jeffreytht.gobblet.model.Grid
@@ -26,17 +20,54 @@ import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 
 class GobbletActivityViewModel(
-    private val row: Int,
-    private val col: Int,
-    private val resourcesProvider: ResourcesProvider
+    row: Int,
+    col: Int,
+    context: Context,
+    private val resourcesProvider: ResourcesProvider,
 ) : ViewModel(), PeaceHandler {
     companion object {
         const val PEACES_COUNT = 12
         const val SCALE_DIFF = 0.25f
     }
 
-    private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
-    private lateinit var gridAdapter: GridAdapter
+    private val game = DaggerGameComponent
+        .builder()
+        .withRow(row)
+        .withCol(col)
+        .build()
+        .provideGame()
+
+    private val gridAdapter = DaggerGridAdapterComponent
+        .builder()
+        .withPeaceHandler(this)
+        .withContext(context)
+        .withData(game.grids)
+        .build()
+        .providesGridAdapter()
+
+    private val peacesAdapterMap = hashMapOf(
+        GREEN to DaggerPeaceAdapterComponent
+            .builder()
+            .withContext(context)
+            .withData(game.peacesMap[GREEN]!!)
+            .withPeaceHandler(this)
+            .build()
+            .providesPeacesAdapter(),
+
+        RED to DaggerPeaceAdapterComponent
+            .builder()
+            .withContext(context)
+            .withData(game.peacesMap[RED]!!)
+            .withPeaceHandler(this)
+            .build()
+            .providesPeacesAdapter(),
+    )
+
+    init {
+        game.registerGameInteractor(gridAdapter)
+        game.registerGameInteractor(peacesAdapterMap.values)
+    }
+
 
     fun init(binding: ActivityGobbletBinding, context: Context) {
         binding.adViewGobblet.loadAd(AdRequest.Builder().build())
@@ -49,19 +80,9 @@ class GobbletActivityViewModel(
         recyclerView: RecyclerView,
         context: Context
     ) {
-        gridAdapter = DaggerGridAdapterComponent
-            .builder()
-            .withPeaceHandler(this)
-            .withActivity(context as Activity)
-            .withRow(row)
-            .withCol(col)
-            .build()
-            .providesGridAdapter()
-
         recyclerView.adapter = gridAdapter
-
         recyclerView.layoutManager =
-            object : GridLayoutManager(context, col) {
+            object : GridLayoutManager(context, game.col) {
                 override fun canScrollHorizontally(): Boolean = false
                 override fun canScrollVertically(): Boolean = false
             }
@@ -72,17 +93,8 @@ class GobbletActivityViewModel(
         @Peace.Color color: Int,
         context: Context
     ) {
-        peacesAdapterMap[color] = DaggerPeaceAdapterComponent
-            .builder()
-            .withActivity(context as Activity)
-            .withPeaceHandler(this)
-            .withColor(color)
-            .build()
-            .providesPeacesAdapter()
-
         recyclerView.layoutManager =
             LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-
         recyclerView.adapter = peacesAdapterMap[color]
     }
 
@@ -97,20 +109,7 @@ class GobbletActivityViewModel(
     }
 
     override fun onDropToGrid(peace: Peace, grid: Grid) {
-        gridAdapter.addPeace(grid, peace)
-        peacesAdapterMap[peace.color]?.removePeace(peace)
+        game.move(peace, grid)
     }
 }
 
-class PeaceShadow(private val shadow: Drawable, view: ImageView) : View.DragShadowBuilder(view) {
-
-    override fun onProvideShadowMetrics(size: Point, touch: Point) {
-        shadow.setBounds(0, 0, view.width, view.height)
-        size.set(view.width, view.height)
-        touch.set(view.width / 2, view.height / 2)
-    }
-
-    override fun onDrawShadow(canvas: Canvas) {
-        shadow.draw(canvas)
-    }
-}

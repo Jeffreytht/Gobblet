@@ -21,7 +21,8 @@ class GobbletActivity : AppCompatActivity() {
             .builder()
             .withRow(4)
             .withCol(4)
-            .activity(this)
+            .withContext(this)
+            .withActivity(this)
             .build()
             .inject(this)
 

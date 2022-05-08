@@ -1,11 +1,12 @@
 package com.jeffreytht.gobblet.di
 
+import android.content.Context
 import com.jeffreytht.gobblet.ui.GobbletActivity
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Named
 
-@Component(modules = [GobbletActivityModule::class])
+@Component(modules = [UtilModule::class, GobbletActivityModule::class])
 interface GobbletActivityComponent {
     companion object {
         const val ROW = "ROW"
@@ -23,7 +24,11 @@ interface GobbletActivityComponent {
         fun withCol(@Named(COL) col: Int): Builder
 
         @BindsInstance
-        fun activity(gobbletActivity: GobbletActivity): Builder
+        fun withActivity(gobbletActivity: GobbletActivity): Builder
+
+        @BindsInstance
+        fun withContext(context: Context): Builder
+
         fun build(): GobbletActivityComponent
     }
 }

@@ -3,11 +3,12 @@ package com.jeffreytht.gobblet.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.PeaceRowItemBinding
+import com.jeffreytht.gobblet.model.GameInteractor
+import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.util.ResourcesProvider
 
@@ -16,7 +17,7 @@ class PeacesAdapter(
     private val peaceHandler: PeaceHandler,
     private val resourcesProvider: ResourcesProvider
 ) :
-    RecyclerView.Adapter<PeacesAdapter.PeaceViewHolder>() {
+    RecyclerView.Adapter<PeacesAdapter.PeaceViewHolder>(), GameInteractor {
 
     class PeaceViewHolder(
         private val binding: PeaceRowItemBinding,
@@ -57,9 +58,11 @@ class PeacesAdapter(
 
     override fun getItemCount(): Int = dataset.size
 
-    fun removePeace(peace: Peace) {
+    override fun movePeace(peace: Peace, grid: Grid) {
         val idx = dataset.indexOf(peace)
-        dataset.removeAt(idx)
-        notifyItemRemoved(idx)
+        if (idx != -1) {
+            dataset.removeAt(idx)
+            notifyItemRemoved(idx)
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.jeffreytht.gobblet.di
 
-import android.app.Activity
+import android.content.Context
 import com.jeffreytht.gobblet.adapter.PeacesAdapter
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.util.PeaceHandler
@@ -17,10 +17,10 @@ interface PeaceAdapterComponent {
         fun withPeaceHandler(peaceHandler: PeaceHandler): Builder
 
         @BindsInstance
-        fun withActivity(activity: Activity): Builder
+        fun withContext(context: Context): Builder
 
         @BindsInstance
-        fun withColor(@Peace.Color color: Int): Builder
+        fun withData(data: ArrayList<Peace>): Builder
 
         fun build(): PeaceAdapterComponent
     }

@@ -7,6 +7,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.GobbletGridItemBinding
+import com.jeffreytht.gobblet.model.GameInteractor
 import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.util.PeaceHandler
@@ -18,7 +19,7 @@ class GridAdapter(
     private val peaceHandler: PeaceHandler,
     private val resourcesProvider: ResourcesProvider
 ) :
-    RecyclerView.Adapter<GridAdapter.GridHolder>() {
+    RecyclerView.Adapter<GridAdapter.GridHolder>(), GameInteractor {
 
     class GridHolder(
         binding: GobbletGridItemBinding,
@@ -55,7 +56,9 @@ class GridAdapter(
             imageView.layoutParams.apply {
                 height = ((parentHeight - 16) * peace.scale).toInt()
                 width = (height * resourcesProvider.getAspectRatio(peace.resId)).toInt()
+
             }
+            imageView.requestLayout()
             imageView.setImageResource(peace.resId)
         }
     }
@@ -71,7 +74,7 @@ class GridAdapter(
     }
 
     override fun onBindViewHolder(holder: GridHolder, position: Int) {
-        holder.initPeaces(data[position / row][position % col])
+        holder.initPeaces(data[position / col][position % col])
     }
 
     override fun getItemCount(): Int = row * col
@@ -80,7 +83,7 @@ class GridAdapter(
 
     private val col: Int = if (data.isEmpty()) 0 else data.first().size
 
-    fun addPeace(grid: Grid, peace: Peace) {
+    override fun movePeace(peace: Peace, grid: Grid) {
         data[grid.row][grid.col].peaces.add(peace)
         notifyItemChanged(grid.row * col + grid.col)
     }
