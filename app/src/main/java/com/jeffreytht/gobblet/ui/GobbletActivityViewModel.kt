@@ -1,6 +1,8 @@
 package com.jeffreytht.gobblet.ui
 
+import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Build
 import android.widget.ImageView
 import android.widget.Toast
@@ -21,6 +23,7 @@ import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
+import com.jeffreytht.gobblet.util.DialogBuilder
 import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import io.reactivex.rxjava3.core.Observable
@@ -31,6 +34,7 @@ class GobbletActivityViewModel(
     context: Context,
     @GobbletMode.Mode private val gobbletMode: Int,
     private val resourcesProvider: ResourcesProvider,
+    private val dialogBuilder: DialogBuilder
 ) : ViewModel(), PeaceHandler {
     private val disposable = CompositeDisposable()
     var observableTitle = ObservableField<String>()
@@ -166,6 +170,29 @@ class GobbletActivityViewModel(
 
     override fun onDropToGrid(peace: Peace, grid: Grid) {
         game.move(peace, grid)
+    }
+
+    fun onBackPressed(activity: Activity) {
+        game
+            .getWinnerObservable()
+            .firstElement()
+            .subscribe {
+                if (it == -1) {
+                    dialogBuilder.showDialog(
+                        R.string.quit_game_title,
+                        R.string.quit_game_message,
+                        R.drawable.ic_green_large_peace,
+                        R.string.yes,
+                        R.string.no,
+                    ) { _: DialogInterface, button: Int ->
+                        if (button == DialogInterface.BUTTON_POSITIVE) {
+                            activity.finish()
+                        }
+                    }
+                } else {
+                    activity.finish()
+                }
+            }
     }
 }
 

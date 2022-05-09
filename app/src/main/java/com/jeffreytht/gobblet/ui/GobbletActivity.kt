@@ -36,4 +36,8 @@ class GobbletActivity : AppCompatActivity() {
         viewModel.init(binding, this)
         setContentView(binding.root)
     }
+
+    override fun onBackPressed() {
+        viewModel.onBackPressed(this)
+    }
 }
