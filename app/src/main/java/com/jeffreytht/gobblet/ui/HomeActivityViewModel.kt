@@ -1,8 +1,7 @@
 package com.jeffreytht.gobblet.ui
 
 import androidx.annotation.DrawableRes
-import androidx.databinding.Observable
-import androidx.databinding.PropertyChangeRegistry
+import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.GobbletMode.Companion.SINGLE_PLAYER
@@ -10,9 +9,9 @@ import com.jeffreytht.gobblet.model.GobbletMode.Companion.TWO_PLAYERS
 import com.jeffreytht.gobblet.util.GobbletController
 
 class HomeActivityViewModel constructor(private val gobbletController: GobbletController) :
-    ViewModel(), Observable {
-    private val callbacks = PropertyChangeRegistry()
+    ViewModel() {
     private var isVolumeOn = true
+    var volumeIcon = ObservableField<@DrawableRes Int>(getVolumeIcons())
 
     fun onSinglePlayerClicked() {
         gobbletController.update(SINGLE_PLAYER)
@@ -24,27 +23,15 @@ class HomeActivityViewModel constructor(private val gobbletController: GobbletCo
 
     fun onVolumeClicked() {
         isVolumeOn = !isVolumeOn
-        notifyPropertyChanged()
+        volumeIcon.set(getVolumeIcons())
     }
 
     @DrawableRes
-    fun getVolumeIcon(): Int {
+    fun getVolumeIcons(): Int {
         return if (isVolumeOn) {
             R.drawable.ic_volume_up
         } else {
             R.drawable.ic_volume_off
         }
-    }
-
-    override fun addOnPropertyChangedCallback(callback: Observable.OnPropertyChangedCallback?) {
-        callbacks.add(callback)
-    }
-
-    override fun removeOnPropertyChangedCallback(callback: Observable.OnPropertyChangedCallback?) {
-        callbacks.remove(callback)
-    }
-
-    private fun notifyPropertyChanged() {
-        callbacks.notifyCallbacks(this, 0, null)
     }
 }

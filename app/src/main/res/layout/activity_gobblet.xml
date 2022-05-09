@@ -6,6 +6,9 @@
 
     <data>
 
+        <variable
+            name="vm"
+            type="com.jeffreytht.gobblet.ui.GobbletActivityViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,13 +18,13 @@
         tools:context=".ui.GobbletActivity">
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/textViewPlayerTurn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="36dp"
-            android:text="@string/your_turn"
-            android:textColor="@color/white"
+            android:text="@{vm.observableTitle}"
+            android:textColor="@{context.getColor(vm.observableTitleColor)}"
             android:textSize="32sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +50,7 @@
             ads:layout_constraintBottom_toBottomOf="parent"
             ads:layout_constraintEnd_toEndOf="parent"
             ads:layout_constraintStart_toStartOf="parent"
-            ads:layout_constraintTop_toBottomOf="@+id/textView3">
+            ads:layout_constraintTop_toBottomOf="@+id/textViewPlayerTurn">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewRedPeaces"

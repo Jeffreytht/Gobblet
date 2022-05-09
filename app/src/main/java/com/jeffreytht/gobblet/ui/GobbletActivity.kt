@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.MobileAds
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
 import com.jeffreytht.gobblet.di.DaggerGobbletActivityComponent
+import com.jeffreytht.gobblet.model.GobbletMode
 import javax.inject.Inject
 
 class GobbletActivity : AppCompatActivity() {
@@ -17,11 +18,15 @@ class GobbletActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGobbletBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        @GobbletMode.Mode val gobbletMode =
+            intent.getIntExtra(GOBBLET_MODE, GobbletMode.SINGLE_PLAYER)
+
         DaggerGobbletActivityComponent
             .builder()
             .withDimension(4)
             .withContext(this)
             .withActivity(this)
+            .withGobbletMode(gobbletMode)
             .build()
             .inject(this)
 

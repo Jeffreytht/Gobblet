@@ -1,15 +1,19 @@
 package com.jeffreytht.gobblet.model
 
-import android.util.Log
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
-import java.util.Stack
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import java.util.*
 
 class Game(
-    val dimension: Int
+    val dimension: Int,
+    @GobbletMode.Mode private val gobbletMode: Int
 ) {
     private val gameInteractors = HashSet<GameInteractor>()
+    private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
+    private val winnerSubject = BehaviorSubject.createDefault(-1)
 
     val grids = initGrid()
     val peacesMap = hashMapOf(
@@ -33,25 +37,25 @@ class Game(
         }
     }
 
-    fun move(peace: Peace, grid: Grid): Boolean {
-        if (!isValidMove(peace, grid)) {
-            return false
+    fun move(peace: Peace, grid: Grid) {
+        if (!isValidMove(peace, grid) || winnerSubject.value != -1) {
+            return
         }
-
-        Log.d(
-            "Gobblet", "Moving peace " + peace.size + " " + peace.color
-                    + " to Grid [" + grid.row + "," + grid.col + "]"
-        )
-
         for (i in gameInteractors) {
             i.movePeace(peace, grid)
         }
-
-        Log.d("", "move: " + endMove())
-        return true
+        endMove()
     }
 
-    private fun endMove(): Boolean {
+    private fun endMove() {
+        val winner = getWinner()
+        if (winner != -1) {
+            return winnerSubject.onNext(winner)
+        }
+        playerTurnSubject.onNext(if (playerTurnSubject.value == GREEN) RED else GREEN)
+    }
+
+    private fun getWinner(): Int {
         // Check row
         for (i in 0 until dimension) {
             var gameOver = true
@@ -65,7 +69,7 @@ class Game(
                 }
             }
             if (gameOver) {
-                return true
+                return grids[i][0].peaces.peek().color
             }
         }
 
@@ -82,7 +86,7 @@ class Game(
                 }
             }
             if (gameOver) {
-                return true
+                return grids[0][i].peaces.peek().color
             }
         }
 
@@ -98,7 +102,7 @@ class Game(
             }
         }
         if (gameOver) {
-            return true
+            return grids[0][0].peaces.peek().color
         }
 
         // Check diagonal
@@ -113,10 +117,20 @@ class Game(
                 break
             }
         }
+        if (gameOver) {
+            return grids[0][dimension - 1].peaces.peek().color
+        }
 
-        return gameOver
+        return -1
     }
 
+    fun getPlayerTurnObservable(): Observable<@Peace.Color Int> {
+        return playerTurnSubject.hide()
+    }
+
+    fun getWinnerObservable(): Observable<Int> {
+        return winnerSubject.hide()
+    }
 
     private fun initPeaces(@Peace.Color color: Int): ArrayList<Peace> {
         val dataset = ArrayList<Peace>()
