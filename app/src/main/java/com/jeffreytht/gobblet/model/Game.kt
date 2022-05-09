@@ -56,6 +56,8 @@ class Game(
     }
 
     private fun getWinner(): Int {
+        val winner = HashSet<Int>()
+
         // Check row
         for (i in 0 until dimension) {
             var gameOver = true
@@ -69,7 +71,7 @@ class Game(
                 }
             }
             if (gameOver) {
-                return grids[i][0].peaces.peek().color
+                winner.add(grids[i][0].peaces.peek().color)
             }
         }
 
@@ -86,7 +88,7 @@ class Game(
                 }
             }
             if (gameOver) {
-                return grids[0][i].peaces.peek().color
+                winner.add(grids[0][i].peaces.peek().color)
             }
         }
 
@@ -102,7 +104,7 @@ class Game(
             }
         }
         if (gameOver) {
-            return grids[0][0].peaces.peek().color
+            winner.add(grids[0][0].peaces.peek().color)
         }
 
         // Check diagonal
@@ -118,10 +120,18 @@ class Game(
             }
         }
         if (gameOver) {
-            return grids[0][dimension - 1].peaces.peek().color
+            winner.add(grids[0][dimension - 1].peaces.peek().color)
         }
 
-        return -1
+        if (winner.isEmpty()) {
+            return -1
+        }
+
+        if (winner.size == 1) {
+            return winner.first()
+        }
+
+        return if (playerTurnSubject.value!! == GREEN) RED else GREEN
     }
 
     fun getPlayerTurnObservable(): Observable<@Peace.Color Int> {
