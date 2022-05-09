@@ -2,6 +2,7 @@ package com.jeffreytht.gobblet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.PeaceRowItemBinding
@@ -69,5 +70,10 @@ class PeacesAdapter(
             dataset.removeAt(idx)
             notifyItemRemoved(idx)
         }
+    }
+
+    fun updateImageRes(@DrawableRes resId: Int) {
+        dataset.forEach { it.resId = resId }
+        notifyItemRangeChanged(0, itemCount)
     }
 }

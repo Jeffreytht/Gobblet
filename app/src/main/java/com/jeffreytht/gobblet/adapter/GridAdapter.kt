@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.GobbletGridItemBinding
@@ -53,6 +54,7 @@ class GridAdapter(
 
         fun initPeaces(grid: Grid) {
             itemView.setTag(R.string.grid_tag, grid)
+            itemView.setBackgroundResource(grid.background)
             imageView.apply {
                 requestLayout()
                 if (grid.peaces.empty()) {
@@ -104,5 +106,26 @@ class GridAdapter(
             peacesSet[peace] = this
         }
         notifyItemChanged(grid.row * col + grid.col)
+    }
+
+    fun setGridBackground(@DrawableRes resId: Int, row: Int, col: Int) {
+        data[row][col].background = resId
+        notifyItemChanged(row * this.col + col)
+    }
+
+    fun setTopPeaceDrawable(@Peace.Color color: Int, @DrawableRes resId: Int) {
+        data.forEach { colData ->
+            colData.forEach colDataForEach@{ grid ->
+                if (grid.peaces.empty()) {
+                    return@colDataForEach
+                }
+                with(grid.peaces.peek()) {
+                    if (this.color == color) {
+                        grid.peaces.peek().resId = resId
+                    }
+                }
+            }
+        }
+        notifyItemRangeChanged(0, itemCount)
     }
 }

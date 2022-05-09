@@ -23,11 +23,15 @@ import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
+import com.jeffreytht.gobblet.model.Winner
 import com.jeffreytht.gobblet.util.DialogBuilder
 import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import java.util.concurrent.TimeUnit
 
 class GobbletActivityViewModel(
     dimension: Int,
@@ -43,6 +47,7 @@ class GobbletActivityViewModel(
     companion object {
         const val PEACES_COUNT = 12
         const val SCALE_DIFF = 0.25f
+        const val LINE_COLOR_DELAY = 300L
     }
 
     private val game = DaggerGameComponent
@@ -104,19 +109,95 @@ class GobbletActivityViewModel(
             game
                 .getWinnerObservable()
                 .distinctUntilChanged()
-                .subscribe { color ->
-                    if (color != GREEN && color != RED) {
-                        return@subscribe
+                .flatMapCompletable { winner ->
+                    if (winner == Winner.NO_WINNER) {
+                        return@flatMapCompletable Completable.complete()
                     }
-                    resourcesProvider.getString(
-                        R.string.player_win,
-                        resourcesProvider.getString(if (color == GREEN) R.string.green else R.string.red)
-                    ).let {
-                        resourcesProvider.makeToast(it, Toast.LENGTH_SHORT)
-                        observableTitleColor.set(R.color.yellow)
-                        observableTitle.set(it)
+
+                    val lines = ArrayList<Pair<Int, Int>>()
+                    when (winner.line) {
+                        Winner.ROW -> {
+                            for (i in 0 until game.dimension) {
+                                lines.add(Pair(winner.idx, i))
+                            }
+                        }
+                        Winner.COL -> {
+                            for (i in 0 until game.dimension) {
+                                lines.add(Pair(i, winner.idx))
+                            }
+                        }
+                        Winner.LEFT_DIAGONAL -> {
+                            for (i in 0 until game.dimension) {
+                                lines.add(Pair(i, i))
+                            }
+                        }
+                        Winner.RIGHT_DIAGONAL -> {
+                            for (i in 0 until game.dimension) {
+                                lines.add(Pair(i, game.dimension - 1 - i))
+                            }
+                        }
                     }
-                }
+
+                    return@flatMapCompletable Observable.fromIterable(lines)
+                        .concatMap {
+                            Observable.just(it).delay(LINE_COLOR_DELAY, TimeUnit.MILLISECONDS)
+                        }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnNext {
+                            gridAdapter.setGridBackground(
+                                R.drawable.bg_grid_colored,
+                                it.first,
+                                it.second
+                            )
+                        }
+                        .doOnComplete {
+                            peacesAdapterMap[GREEN]?.updateImageRes(
+                                if (winner.color == GREEN) {
+                                    R.drawable.ic_green_large_smile_peace
+                                } else {
+                                    R.drawable.ic_green_large_sad_peace
+                                }
+                            )
+                            peacesAdapterMap[RED]?.updateImageRes(
+                                if (winner.color == RED) {
+                                    R.drawable.ic_red_large_smile_peace
+                                } else {
+                                    R.drawable.ic_red_large_sad_peace
+                                }
+                            )
+                            gridAdapter.setTopPeaceDrawable(
+                                RED,
+                                if (winner.color == RED) {
+                                    R.drawable.ic_red_large_smile_peace
+                                } else {
+                                    R.drawable.ic_red_large_sad_peace
+                                }
+                            )
+                            gridAdapter.setTopPeaceDrawable(
+                                GREEN,
+                                if (winner.color == GREEN) {
+                                    R.drawable.ic_green_large_smile_peace
+                                } else {
+                                    R.drawable.ic_green_large_sad_peace
+                                }
+                            )
+                            resourcesProvider.getString(
+                                R.string.player_win,
+                                resourcesProvider.getString(
+                                    if (winner.color == GREEN) {
+                                        R.string.green
+                                    } else {
+                                        R.string.red
+                                    }
+                                )
+                            ).let {
+                                resourcesProvider.makeToast(it, Toast.LENGTH_SHORT)
+                                observableTitleColor.set(R.color.yellow)
+                                observableTitle.set(it)
+                            }
+                        }.toList().ignoreElement()
+                }.subscribe()
+
         )
     }
 
@@ -149,7 +230,7 @@ class GobbletActivityViewModel(
                 game.getWinnerObservable()
             ) { playerTurn, winner -> Pair(playerTurn, winner) }
                 .firstElement()
-                .filter { it.second == -1 }
+                .filter { it.second == Winner.NO_WINNER }
                 .map { it.first }
                 .subscribe { it ->
                     if (it != peace.color) {
@@ -177,7 +258,7 @@ class GobbletActivityViewModel(
             .getWinnerObservable()
             .firstElement()
             .subscribe {
-                if (it == -1) {
+                if (it == Winner.NO_WINNER) {
                     dialogBuilder.showDialog(
                         R.string.quit_game_title,
                         R.string.quit_game_message,

@@ -1,5 +1,7 @@
 package com.jeffreytht.gobblet.model
 
+import androidx.annotation.DrawableRes
+import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
@@ -13,12 +15,16 @@ class Game(
 ) {
     private val gameInteractors = HashSet<GameInteractor>()
     private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
-    private val winnerSubject = BehaviorSubject.createDefault(-1)
+    private val winnerSubject = BehaviorSubject.createDefault(Winner.NO_WINNER)
 
     val grids = initGrid()
+    val peaces = hashMapOf(
+        GREEN to initPeaces(GREEN, R.drawable.ic_green_large_peace),
+        RED to initPeaces(RED, R.drawable.ic_red_large_peace)
+    )
     val peacesMap = hashMapOf(
-        GREEN to initPeaces(GREEN),
-        RED to initPeaces(RED)
+        GREEN to peaces[GREEN],
+        RED to peaces[RED]
     )
 
     fun registerGameInteractor(gameInteractor: Collection<GameInteractor>) {
@@ -38,7 +44,7 @@ class Game(
     }
 
     fun move(peace: Peace, grid: Grid) {
-        if (!isValidMove(peace, grid) || winnerSubject.value != -1) {
+        if (!isValidMove(peace, grid) || winnerSubject.value != Winner.NO_WINNER) {
             return
         }
         for (i in gameInteractors) {
@@ -49,14 +55,14 @@ class Game(
 
     private fun endMove() {
         val winner = getWinner()
-        if (winner != -1) {
+        if (winner != Winner.NO_WINNER) {
             return winnerSubject.onNext(winner)
         }
         playerTurnSubject.onNext(if (playerTurnSubject.value == GREEN) RED else GREEN)
     }
 
-    private fun getWinner(): Int {
-        val winner = HashSet<Int>()
+    private fun getWinner(): Winner {
+        val winner = HashMap<@Peace.Color Int, Winner>()
 
         // Check row
         for (i in 0 until dimension) {
@@ -71,7 +77,12 @@ class Game(
                 }
             }
             if (gameOver) {
-                winner.add(grids[i][0].peaces.peek().color)
+                winner[grids[i][0].peaces.peek().color] =
+                    Winner(
+                        color = grids[i][0].peaces.peek().color,
+                        line = Winner.ROW,
+                        idx = i
+                    )
             }
         }
 
@@ -88,7 +99,12 @@ class Game(
                 }
             }
             if (gameOver) {
-                winner.add(grids[0][i].peaces.peek().color)
+                winner[grids[0][i].peaces.peek().color] =
+                    Winner(
+                        color = grids[0][i].peaces.peek().color,
+                        line = Winner.COL,
+                        idx = i
+                    )
             }
         }
 
@@ -104,7 +120,12 @@ class Game(
             }
         }
         if (gameOver) {
-            winner.add(grids[0][0].peaces.peek().color)
+            winner[grids[0][0].peaces.peek().color] =
+                Winner(
+                    color = grids[0][0].peaces.peek().color,
+                    line = Winner.LEFT_DIAGONAL,
+                    idx = 0
+                )
         }
 
         // Check diagonal
@@ -120,29 +141,34 @@ class Game(
             }
         }
         if (gameOver) {
-            winner.add(grids[0][dimension - 1].peaces.peek().color)
+            winner[grids[0][dimension - 1].peaces.peek().color] =
+                Winner(
+                    color = grids[0][dimension - 1].peaces.peek().color,
+                    line = Winner.RIGHT_DIAGONAL,
+                    idx = 0
+                )
         }
 
         if (winner.isEmpty()) {
-            return -1
+            return Winner.NO_WINNER
         }
 
         if (winner.size == 1) {
-            return winner.first()
+            return winner[winner.keys.first()]!!
         }
 
-        return if (playerTurnSubject.value!! == GREEN) RED else GREEN
+        return if (playerTurnSubject.value!! == GREEN) winner[RED]!! else winner[GREEN]!!
     }
 
     fun getPlayerTurnObservable(): Observable<@Peace.Color Int> {
         return playerTurnSubject.hide()
     }
 
-    fun getWinnerObservable(): Observable<Int> {
+    fun getWinnerObservable(): Observable<Winner> {
         return winnerSubject.hide()
     }
 
-    private fun initPeaces(@Peace.Color color: Int): ArrayList<Peace> {
+    private fun initPeaces(@Peace.Color color: Int, @DrawableRes res: Int): ArrayList<Peace> {
         val dataset = ArrayList<Peace>()
         var scale = 1.0f
         @Peace.Size var size = Peace.LARGE
@@ -156,7 +182,8 @@ class Game(
                     id = i,
                     color = color,
                     scale = scale,
-                    size = size
+                    size = size,
+                    resId = res
                 )
             )
         }
@@ -168,7 +195,14 @@ class Game(
         for (i in 0 until dimension) {
             data.add(ArrayList())
             for (j in 0 until dimension) {
-                data[i].add(Grid(row = i, col = j, peaces = Stack()))
+                data[i].add(
+                    Grid(
+                        row = i,
+                        col = j,
+                        peaces = Stack(),
+                        background = R.drawable.bg_grid_border
+                    )
+                )
             }
         }
         return data
