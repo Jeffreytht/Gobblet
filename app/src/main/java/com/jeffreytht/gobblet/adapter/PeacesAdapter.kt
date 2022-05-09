@@ -2,7 +2,6 @@ package com.jeffreytht.gobblet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.databinding.PeaceRowItemBinding
@@ -27,8 +26,11 @@ class PeacesAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.peaceImageView.setOnLongClickListener {
-                peaceHandler.onLongClick(it.getTag(R.string.peace_tag) as Peace, it as ImageView)
+            binding.root.setOnLongClickListener {
+                peaceHandler.onLongClick(
+                    binding.peaceImageView.getTag(R.string.peace_tag) as Peace,
+                    binding.peaceImageView
+                )
             }
         }
 
@@ -37,6 +39,9 @@ class PeacesAdapter(
             binding.peaceImageView.layoutParams.apply {
                 height = ((parentHeight - 16) * peace.scale).toInt()
                 width = (height * resourcesProvider.getAspectRatio(peace.resId)).toInt()
+            }
+            binding.root.layoutParams.apply {
+                width = (parentHeight * resourcesProvider.getAspectRatio(peace.resId)).toInt() + 16
             }
             binding.peaceImageView.setTag(R.string.peace_tag, peace)
         }
