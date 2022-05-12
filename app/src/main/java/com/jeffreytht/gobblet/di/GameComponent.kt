@@ -1,7 +1,6 @@
 package com.jeffreytht.gobblet.di
 
 import com.jeffreytht.gobblet.model.Game
-import com.jeffreytht.gobblet.model.GobbletMode
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Named
@@ -17,9 +16,6 @@ interface GameComponent {
     interface Builder {
         @BindsInstance
         fun withDimension(@Named(DIMENSION) dimension: Int): Builder
-
-        @BindsInstance
-        fun withGobbletMode(@Named(GOBBLET_MODE) @GobbletMode.Mode gobbletMode: Int): Builder
 
         fun build(): GameComponent
     }

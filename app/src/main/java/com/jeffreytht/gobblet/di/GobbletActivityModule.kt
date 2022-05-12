@@ -2,6 +2,7 @@ package com.jeffreytht.gobblet.di
 
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
+import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.model.GobbletMode
 import com.jeffreytht.gobblet.ui.GobbletActivity
 import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
@@ -21,7 +22,8 @@ interface GobbletActivityModule {
             @Named(DIMENSION) dimension: Int,
             @Named(GOBBLET_MODE) @GobbletMode.Mode gobbletMode: Int,
             resourcesProvider: ResourcesProvider,
-            dialogBuilder: DialogBuilder
+            dialogBuilder: DialogBuilder,
+            aiPlayer: AIPlayer
         ): GobbletActivityViewModel {
             return ViewModelProvider(
                 gobbletActivity,
@@ -30,7 +32,8 @@ interface GobbletActivityModule {
                     context,
                     gobbletMode,
                     resourcesProvider,
-                    dialogBuilder
+                    dialogBuilder,
+                    aiPlayer
                 )
             ).get(
                 GobbletActivityViewModel::class.java

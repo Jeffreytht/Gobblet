@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.MobileAds
 import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
 import com.jeffreytht.gobblet.di.DaggerGobbletActivityComponent
+import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.model.GobbletMode
+import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
+import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import javax.inject.Inject
 
 class GobbletActivity : AppCompatActivity() {
@@ -27,6 +30,9 @@ class GobbletActivity : AppCompatActivity() {
             .withContext(this)
             .withActivity(this)
             .withGobbletMode(gobbletMode)
+            .withAIColor(RED)
+            .withPlayerColor(GREEN)
+            .withDifficulty(AIPlayer.MEDIUM)
             .build()
             .inject(this)
 

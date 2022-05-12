@@ -4,15 +4,15 @@ import androidx.annotation.DrawableRes
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
-import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.*
 
-class Game(
-    val dimension: Int,
-    @GobbletMode.Mode private val gobbletMode: Int
-) {
+class Game(val dimension: Int) {
+    companion object {
+        const val SCALE_DIFF = 0.25f
+    }
+
     private val gameInteractors = HashSet<GameInteractor>()
     private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
     private val winnerSubject = BehaviorSubject.createDefault(Winner.NO_WINNER)
@@ -172,9 +172,9 @@ class Game(
         val dataset = ArrayList<Peace>()
         var scale = 1.0f
         @Peace.Size var size = Peace.LARGE
-        for (i in 0 until GobbletActivityViewModel.PEACES_COUNT) {
+        for (i in 0 until dimension * (dimension - 1)) {
             if (i > 0 && i % (dimension - 1) == 0) {
-                scale -= GobbletActivityViewModel.SCALE_DIFF
+                scale -= SCALE_DIFF
                 size--
             }
             dataset.add(

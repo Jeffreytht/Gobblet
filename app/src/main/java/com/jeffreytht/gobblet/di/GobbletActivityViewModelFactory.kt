@@ -3,6 +3,7 @@ package com.jeffreytht.gobblet.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.model.GobbletMode
 import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
 import com.jeffreytht.gobblet.util.DialogBuilder
@@ -13,7 +14,8 @@ class GobbletActivityViewModelFactory(
     private val context: Context,
     @GobbletMode.Mode private val gobbletMode: Int,
     private val resourcesProvider: ResourcesProvider,
-    private val dialogBuilder: DialogBuilder
+    private val dialogBuilder: DialogBuilder,
+    private val aiPlayer: AIPlayer
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -23,7 +25,8 @@ class GobbletActivityViewModelFactory(
             context,
             gobbletMode,
             resourcesProvider,
-            dialogBuilder
+            dialogBuilder,
+            aiPlayer
         ) as T
     }
 }
