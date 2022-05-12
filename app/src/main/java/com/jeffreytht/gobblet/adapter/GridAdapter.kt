@@ -47,8 +47,11 @@ class GridAdapter(
                 }
             }
 
-            binding.peaceImageView.setOnLongClickListener {
-                peaceHandler.onLongClick(it.getTag(R.string.peace_tag) as Peace, it as ImageView)
+            binding.peaceImageView.setOnLongClickListener { view ->
+                view.getTag(R.string.peace_tag)?.let {
+                    peaceHandler.onLongClick(it as Peace, view as ImageView)
+                }
+                true
             }
         }
 
