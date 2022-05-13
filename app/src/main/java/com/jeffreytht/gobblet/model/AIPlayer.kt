@@ -14,9 +14,8 @@ class AIPlayer(
         const val EASY = 1
         const val MEDIUM = 3
         const val HARD = 5
-        const val AI_WIN = 10
-        const val AI_LOSE = -10
-        const val TIE = 0
+        const val AI_WIN = Int.MAX_VALUE
+        const val AI_LOSE = Int.MIN_VALUE
     }
 
     @IntDef(EASY, MEDIUM, HARD)
@@ -142,7 +141,7 @@ class AIPlayer(
     ): Int {
         val dimension = grids.size
         val score = getScore(grids)
-        if (depth == 0 || score != TIE) {
+        if (depth == 0 || score == AI_LOSE || score == AI_WIN) {
             return score
         }
 
@@ -364,6 +363,21 @@ class AIPlayer(
                 AI_LOSE
             }
         }
-        return TIE
+
+        // TIE
+        var score = 0;
+        for (i in 0 until dimension) {
+            for (j in 0 until dimension) {
+                if (grids[i][j].peaces.empty()) {
+                    continue
+                }
+                if (grids[i][j].peaces.peek().color == aiColor) {
+                    score += grids[i][j].peaces.peek().size
+                } else {
+                    score -= grids[i][j].peaces.peek().size
+                }
+            }
+        }
+        return score
     }
 }

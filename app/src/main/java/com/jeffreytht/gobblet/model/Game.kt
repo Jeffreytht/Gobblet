@@ -175,7 +175,7 @@ class Game(val dimension: Int) {
         for (i in 0 until dimension * (dimension - 1)) {
             if (i > 0 && i % (dimension - 1) == 0) {
                 scale -= SCALE_DIFF
-                size--
+                size /= 10
             }
             dataset.add(
                 Peace(

@@ -14,10 +14,10 @@ data class Peace(
     @DrawableRes var resId: Int
 ) : Parcelable {
     companion object {
-        const val EXTRA_SMALL = 0
-        const val SMALL = 1
-        const val MEDIUM = 2
-        const val LARGE = 3
+        const val EXTRA_SMALL = 1
+        const val SMALL = 10
+        const val MEDIUM = 100
+        const val LARGE = 1000
         const val GREEN = 0
         const val RED = 1
         const val NO_COLOR = 2
