@@ -7,12 +7,9 @@ import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.*
+import kotlin.math.pow
 
 class Game(val dimension: Int) {
-    companion object {
-        const val SCALE_DIFF = 0.25f
-    }
-
     private val gameInteractors = HashSet<GameInteractor>()
     private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
     private val winnerSubject = BehaviorSubject.createDefault(Winner.NO_WINNER)
@@ -170,18 +167,15 @@ class Game(val dimension: Int) {
 
     private fun initPeaces(@Peace.Color color: Int, @DrawableRes res: Int): ArrayList<Peace> {
         val dataset = ArrayList<Peace>()
-        var scale = 1.0f
-        @Peace.Size var size = Peace.LARGE
+        @Peace.Size var size = 10f.pow(dimension - 1).toInt()
         for (i in 0 until dimension * (dimension - 1)) {
             if (i > 0 && i % (dimension - 1) == 0) {
-                scale -= SCALE_DIFF
                 size /= 10
             }
             dataset.add(
                 Peace(
                     id = i,
                     color = color,
-                    scale = scale,
                     size = size,
                     resId = res
                 )

@@ -324,5 +324,9 @@ class GobbletActivityViewModel(
                 }
             }
     }
+
+    fun onDestroy() {
+        disposable.dispose()
+    }
 }
 

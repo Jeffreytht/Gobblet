@@ -32,7 +32,7 @@ class GobbletActivity : AppCompatActivity() {
             .withGobbletMode(gobbletMode)
             .withAIColor(RED)
             .withPlayerColor(GREEN)
-            .withDifficulty(AIPlayer.MEDIUM)
+            .withDifficulty(AIPlayer.HARD)
             .build()
             .inject(this)
 
@@ -45,5 +45,10 @@ class GobbletActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         viewModel.onBackPressed(this)
+    }
+
+    override fun onDestroy() {
+        viewModel.onDestroy()
+        super.onDestroy()
     }
 }

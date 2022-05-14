@@ -4,8 +4,10 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.annotation.DrawableRes
+import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import androidx.core.content.res.ResourcesCompat
+import java.io.InputStream
 
 class ResourcesProvider(private val context: Context) {
     fun getDrawable(@DrawableRes resId: Int): Drawable? {
@@ -29,5 +31,9 @@ class ResourcesProvider(private val context: Context) {
 
     fun makeToast(message: String, duration: Int) {
         Toast.makeText(context, message, duration).show()
+    }
+
+    fun getRawResource(@RawRes resId: Int): InputStream {
+        return context.resources.openRawResource(resId)
     }
 }
