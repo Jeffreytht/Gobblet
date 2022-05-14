@@ -122,6 +122,7 @@ class AIPlayer(
         return peace > grid
     }
 
+    @Deprecated("")
     private fun checkCache(
         turn: Int,
         depth: Int,
@@ -135,6 +136,7 @@ class AIPlayer(
         return Pair(false, -1)
     }
 
+    @Deprecated("")
     private fun putCache(
         turn: Int,
         depth: Int,
@@ -271,14 +273,9 @@ class AIPlayer(
         maxScore: Int,
         minScore: Int
     ): Int {
-        val (isCached, cachedScore) = checkCache(turn, depth, aiPeaces, playerPeaces, eGrids)
-        if (isCached) {
-            return cachedScore
-        }
-
         val score = getScore(eGrids)
         if (depth == 0 || score == AI_LOSE || score == AI_WIN) {
-            return putCache(turn, depth, aiPeaces, playerPeaces, eGrids, score)
+            return score
         }
 
         if (turn == aiColor) {
@@ -312,7 +309,7 @@ class AIPlayer(
                         mScore = max(mScore, eval)
 
                         if (minScore <= mScore) {
-                            return putCache(turn, depth, aiPeaces, playerPeaces, eGrids, maxEval)
+                            return maxEval
                         }
                     }
 
@@ -344,20 +341,13 @@ class AIPlayer(
                             mScore = max(mScore, eval)
 
                             if (minScore <= mScore) {
-                                return putCache(
-                                    turn,
-                                    depth,
-                                    aiPeaces,
-                                    playerPeaces,
-                                    eGrids,
-                                    maxEval
-                                )
+                                return maxEval
                             }
                         }
                     }
                 }
             }
-            return putCache(turn, depth, aiPeaces, playerPeaces, eGrids, maxEval)
+            return maxEval
         } else {
             var mScore = minScore
             var minEval = Int.MAX_VALUE
@@ -388,7 +378,7 @@ class AIPlayer(
                         mScore = min(mScore, eval)
 
                         if (mScore <= maxScore) {
-                            return putCache(turn, depth, aiPeaces, playerPeaces, eGrids, minEval)
+                            return minEval
                         }
                     }
 
@@ -420,20 +410,13 @@ class AIPlayer(
                             mScore = min(mScore, eval)
 
                             if (mScore <= maxScore) {
-                                return putCache(
-                                    turn,
-                                    depth,
-                                    aiPeaces,
-                                    playerPeaces,
-                                    eGrids,
-                                    minEval
-                                )
+                                return minEval
                             }
                         }
                     }
                 }
             }
-            return putCache(turn, depth, aiPeaces, playerPeaces, eGrids, minEval)
+            return minEval
         }
     }
 
