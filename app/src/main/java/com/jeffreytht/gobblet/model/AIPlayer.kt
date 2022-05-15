@@ -1,15 +1,11 @@
 package com.jeffreytht.gobblet.model
 
 import androidx.annotation.IntDef
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.NO_COLOR
 import com.jeffreytht.gobblet.ui.GameSettingProvider
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import io.reactivex.rxjava3.core.Single
-import java.io.InputStreamReader
-import java.nio.charset.StandardCharsets
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -45,7 +41,8 @@ class AIPlayer(
     @Difficulty
     private val difficulty: Int
     private val dimension: Int
-    private val cache: HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>
+    private val cache =
+        HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>()
 
     init {
         val gameSetting = gameSettingProvider.getGameSetting()
@@ -54,27 +51,27 @@ class AIPlayer(
         difficulty = gameSetting.difficulty
         dimension = gameSetting.dimension
 
-        val sb = StringBuilder()
-        val reader = InputStreamReader(
-            resourcesProvider.getRawResource(CACHES[dimension] ?: R.raw.cache_4x4),
-            StandardCharsets.UTF_8
-        )
-
-        val buffer = CharArray(INPUT_STREAM_BUFFER_SIZE)
-        var numRead = reader.read(buffer, 0, buffer.size)
-        while (numRead > 0) {
-            sb.append(buffer, 0, numRead)
-            numRead = reader.read(buffer, 0, buffer.size)
-        }
-
-        val type = object :
-            TypeToken<HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>>() {}.type
-
-        val gson = Gson()
-        cache = gson.fromJson(
-            sb.toString(),
-            type
-        )
+//        val sb = StringBuilder()
+//        val reader = InputStreamReader(
+//            resourcesProvider.getRawResource(CACHES[dimension] ?: R.raw.cache_4x4),
+//            StandardCharsets.UTF_8
+//        )
+//
+//        val buffer = CharArray(INPUT_STREAM_BUFFER_SIZE)
+//        var numRead = reader.read(buffer, 0, buffer.size)
+//        while (numRead > 0) {
+//            sb.append(buffer, 0, numRead)
+//            numRead = reader.read(buffer, 0, buffer.size)
+//        }
+//
+//        val type = object :
+//            TypeToken<HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>>() {}.type
+//
+//        val gson = Gson()
+//        cache = gson.fromJson(
+//            sb.toString(),
+//            type
+//        )
     }
 
     private fun canMovePeace(peace: Peace, dst: Grid): Boolean {

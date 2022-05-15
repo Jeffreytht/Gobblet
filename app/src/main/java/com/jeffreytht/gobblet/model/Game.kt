@@ -58,7 +58,7 @@ class Game(private val gameSetting: GameSetting) {
     private fun endMove() {
         val winner = getWinner()
         if (winner != Winner.NO_WINNER) {
-            return winnerSubject.onNext(winner)
+            winnerSubject.onNext(winner)
         }
         playerTurnSubject.onNext(if (playerTurnSubject.value == GREEN) RED else GREEN)
     }

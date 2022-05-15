@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit
 class GameActivityViewModel(
     context: Context,
     gameSettingProvider: GameSettingProvider,
+    private val soundUtil: SoundUtil,
     private val resourcesProvider: ResourcesProvider,
     private val dialogBuilder: DialogBuilder,
     private val aiPlayer: AIPlayer
@@ -88,7 +89,7 @@ class GameActivityViewModel(
         disposable.addAll(
             game
                 .getPlayerTurnObservable()
-                .subscribe {
+                .doOnNext {
                     observableTitleColor.set(R.color.white)
                     observableTitle.set(
                         resourcesProvider.getString(
@@ -96,9 +97,16 @@ class GameActivityViewModel(
                             resourcesProvider.getString(if (it == GREEN) R.string.green else R.string.red)
                         )
                     )
+                }
+                .skip(1)
+                .subscribe {
+                    soundUtil.play(Sound.CLICK)
                 },
-            game.getPlayerTurnObservable()
-                .filter { gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor }
+            Observable.combineLatest(
+                game.getPlayerTurnObservable(),
+                game.getWinnerObservable()
+            ) { o1, o2 -> Pair(o1, o2) }
+                .filter { it.second == Winner.NO_WINNER && gameSetting.mode == Game.SINGLE_PLAYER && it.first == aiPlayer.aiColor }
                 .observeOn(AndroidSchedulers.mainThread())
                 .map {
                     val grids = ArrayList<ArrayList<Grid>>()
@@ -176,6 +184,7 @@ class GameActivityViewModel(
                         }
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext {
+                            soundUtil.play(Sound.GAME_COLOR_GRID)
                             gridAdapter.setGridBackground(
                                 R.drawable.bg_grid_colored,
                                 it.first,
@@ -183,50 +192,54 @@ class GameActivityViewModel(
                             )
                         }
                         .doOnComplete {
-                            peacesAdapterMap[GREEN]?.updateImageRes(
-                                if (winner.color == GREEN) {
-                                    R.drawable.ic_green_large_smile_peace
+                            val winnerMessage: String
+                            val greenDrawable: Int
+                            val redDrawable: Int
+                            val sound: Int
+
+                            if (winner.color == GREEN) {
+                                sound = Sound.GAME_WIN
+                                greenDrawable = R.drawable.ic_green_large_smile_peace
+                                redDrawable = R.drawable.ic_red_large_sad_peace
+                                winnerMessage = resourcesProvider.getString(
+                                    R.string.player_win,
+                                    resourcesProvider.getString(
+                                        R.string.green
+                                    )
+                                )
+                            } else {
+                                sound = if (gameSetting.mode == Game.SINGLE_PLAYER) {
+                                    Sound.GAME_LOSE
                                 } else {
-                                    R.drawable.ic_green_large_sad_peace
+                                    Sound.GAME_WIN
                                 }
+                                greenDrawable = R.drawable.ic_green_large_sad_peace
+                                redDrawable = R.drawable.ic_red_large_smile_peace
+                                winnerMessage = resourcesProvider.getString(
+                                    R.string.player_win,
+                                    resourcesProvider.getString(
+                                        R.string.red
+                                    )
+                                )
+                            }
+                            soundUtil.play(sound)
+                            peacesAdapterMap[GREEN]?.updateImageRes(
+                                greenDrawable
                             )
                             peacesAdapterMap[RED]?.updateImageRes(
-                                if (winner.color == RED) {
-                                    R.drawable.ic_red_large_smile_peace
-                                } else {
-                                    R.drawable.ic_red_large_sad_peace
-                                }
+                                redDrawable
                             )
                             gridAdapter.setTopPeaceDrawable(
                                 RED,
-                                if (winner.color == RED) {
-                                    R.drawable.ic_red_large_smile_peace
-                                } else {
-                                    R.drawable.ic_red_large_sad_peace
-                                }
+                                redDrawable
                             )
                             gridAdapter.setTopPeaceDrawable(
                                 GREEN,
-                                if (winner.color == GREEN) {
-                                    R.drawable.ic_green_large_smile_peace
-                                } else {
-                                    R.drawable.ic_green_large_sad_peace
-                                }
+                                greenDrawable
                             )
-                            resourcesProvider.getString(
-                                R.string.player_win,
-                                resourcesProvider.getString(
-                                    if (winner.color == GREEN) {
-                                        R.string.green
-                                    } else {
-                                        R.string.red
-                                    }
-                                )
-                            ).let {
-                                resourcesProvider.makeToast(it, Toast.LENGTH_SHORT)
-                                observableTitleColor.set(R.color.yellow)
-                                observableTitle.set(it)
-                            }
+                            resourcesProvider.makeToast(winnerMessage, Toast.LENGTH_SHORT)
+                            observableTitleColor.set(R.color.yellow)
+                            observableTitle.set(winnerMessage)
                         }.toList().ignoreElement()
                 }.subscribe()
 
@@ -290,6 +303,7 @@ class GameActivityViewModel(
     }
 
     fun onBackPressed(activity: Activity) {
+        soundUtil.play(Sound.CLICK)
         game
             .getWinnerObservable()
             .firstElement()
@@ -302,6 +316,7 @@ class GameActivityViewModel(
                         R.string.yes,
                         R.string.no,
                     ) { _: DialogInterface, button: Int ->
+                        soundUtil.play(Sound.CLICK)
                         if (button == DialogInterface.BUTTON_POSITIVE) {
                             activity.finish()
                         }

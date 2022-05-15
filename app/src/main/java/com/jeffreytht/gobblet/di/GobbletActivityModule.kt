@@ -5,6 +5,7 @@ import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.ui.GameActivity
 import com.jeffreytht.gobblet.ui.GameActivityViewModel
 import com.jeffreytht.gobblet.ui.GameSettingProvider
+import com.jeffreytht.gobblet.ui.SoundUtil
 import com.jeffreytht.gobblet.util.DialogBuilder
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import dagger.Module
@@ -27,7 +28,8 @@ abstract class GobbletActivityModule {
             gameSettingProvider: GameSettingProvider,
             resourcesProvider: ResourcesProvider,
             dialogBuilder: DialogBuilder,
-            aiPlayer: AIPlayer
+            aiPlayer: AIPlayer,
+            soundUtil: SoundUtil
         ): GameActivityViewModel {
             return ViewModelProvider(
                 gobbletActivity,
@@ -36,7 +38,8 @@ abstract class GobbletActivityModule {
                     gameSettingProvider,
                     resourcesProvider,
                     dialogBuilder,
-                    aiPlayer
+                    aiPlayer,
+                    soundUtil
                 )
             ).get(
                 GameActivityViewModel::class.java
