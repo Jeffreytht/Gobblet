@@ -1,17 +1,14 @@
 package com.jeffreytht.gobblet.model
 
-import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
-import kotlinx.android.parcel.Parcelize
 
-@Parcelize
 data class Peace(
     val id: Int,
     @Color val color: Int,
     @Size val size: Int,
     @DrawableRes var resId: Int
-) : Parcelable {
+) {
     companion object {
         const val EXTRA_SMALL = 1
         const val SMALL = 10
