@@ -286,15 +286,15 @@ class AIPlayer(
         @Peace.Color turn: Int,
         maxScore: Int,
         minScore: Int
-    ): Int {
+    ): Pair<Int, Int> {
         val score = getScore(eGrids)
         if (depth == 0 || score == AI_LOSE || score == AI_WIN) {
-            return score
+            return Pair(depth, score)
         }
 
         if (turn == aiColor) {
             var mScore = maxScore
-            var maxEval = Int.MIN_VALUE
+            var maxEval = Pair(0, Int.MIN_VALUE)
             for (i in 0 until dimension) {
                 for (j in 0 until dimension) {
                     for (k in dimension - 1 downTo 0) {
@@ -319,8 +319,15 @@ class AIPlayer(
                         )
                         eGrids[i][j] -= multiplier * aiColor
 
-                        maxEval = max(maxEval, eval)
-                        mScore = max(mScore, eval)
+                        if (eval.second == maxEval.second && eval.first > maxEval.first) {
+                            maxEval = eval
+                        }
+
+                        if (eval.second > maxEval.second) {
+                            maxEval = eval
+                        }
+
+                        mScore = max(mScore, eval.second)
 
                         if (minScore <= mScore) {
                             return maxEval
@@ -351,8 +358,15 @@ class AIPlayer(
                             eGrids[k][l] += aiColor * size
                             eGrids[i][j] -= aiColor * size
 
-                            maxEval = max(maxEval, eval)
-                            mScore = max(mScore, eval)
+                            if (eval.second == maxEval.second && eval.first > maxEval.first) {
+                                maxEval = eval
+                            }
+
+                            if (eval.second > maxEval.second) {
+                                maxEval = eval
+                            }
+
+                            mScore = max(mScore, eval.second)
 
                             if (minScore <= mScore) {
                                 return maxEval
@@ -364,7 +378,7 @@ class AIPlayer(
             return maxEval
         } else {
             var mScore = minScore
-            var minEval = Int.MAX_VALUE
+            var minEval = Pair(0, Int.MAX_VALUE)
             for (i in 0 until dimension) {
                 for (j in 0 until dimension) {
                     for (k in dimension - 1 downTo 0) {
@@ -388,8 +402,15 @@ class AIPlayer(
                         )
                         eGrids[i][j] -= multiplier * playerColor
 
-                        minEval = min(minEval, eval)
-                        mScore = min(mScore, eval)
+                        if (eval.second == minEval.second && eval.first > minEval.first) {
+                            minEval = eval
+                        }
+
+                        if (eval.second < minEval.second) {
+                            minEval = eval
+                        }
+
+                        mScore = min(mScore, eval.second)
 
                         if (mScore <= maxScore) {
                             return minEval
@@ -420,8 +441,15 @@ class AIPlayer(
                             eGrids[k][l] += playerColor * size
                             eGrids[i][j] -= playerColor * size
 
-                            minEval = min(minEval, eval)
-                            mScore = min(mScore, eval)
+                            if (eval.second == minEval.second && eval.first > minEval.first) {
+                                minEval = eval
+                            }
+
+                            if (eval.second < minEval.second) {
+                                minEval = eval
+                            }
+
+                            mScore = min(mScore, eval.second)
 
                             if (mScore <= maxScore) {
                                 return minEval
@@ -450,7 +478,7 @@ class AIPlayer(
         val aiPeaces = encodePeaces(peaces[aiColor]!!)
         val playerPeaces = encodePeaces(peaces[playerColor]!!)
 
-        var maxEval = Int.MIN_VALUE
+        var maxEval = Pair(0, Int.MIN_VALUE)
         val moves = ArrayList<Pair<Peace, Grid>>()
 
         for (i in 0 until dimension) {
@@ -476,8 +504,21 @@ class AIPlayer(
                     )
                     eGrids[i][j] -= multiplier * aiColor
 
-                    if (eval >= maxEval) {
-                        if (eval > maxEval) {
+                    if (eval.second > maxEval.second) {
+                        moves.clear()
+                        maxEval = eval
+                        moves.add(
+                            Pair(
+                                peaces[aiColor]!!.find {
+                                    it.size == multiplier
+                                }!!,
+                                grids[i][j]
+                            )
+                        )
+                    }
+
+                    if (eval == maxEval) {
+                        if (eval.first > maxEval.first) {
                             moves.clear()
                             maxEval = eval
                         }
@@ -516,8 +557,14 @@ class AIPlayer(
                         eGrids[k][l] += aiColor * size
                         eGrids[i][j] -= aiColor * size
 
-                        if (eval >= maxEval) {
-                            if (eval > maxEval) {
+                        if (eval.second > maxEval.second) {
+                            moves.clear()
+                            maxEval = eval
+                            moves.add(Pair(grids[k][l].peaces.peek(), grids[i][j]))
+                        }
+
+                        if (eval == maxEval) {
+                            if (eval.first > maxEval.first) {
                                 moves.clear()
                                 maxEval = eval
                             }
