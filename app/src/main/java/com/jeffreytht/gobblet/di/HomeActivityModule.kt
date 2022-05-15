@@ -8,7 +8,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-interface HomeActivityModule {
+abstract class HomeActivityModule {
     companion object {
         @Provides
         fun providesHomeActivityViewModel(
@@ -25,4 +25,6 @@ interface HomeActivityModule {
             return GobbletController(homeActivity)
         }
     }
+
+    abstract fun contributeHomeActivity(): HomeActivity
 }

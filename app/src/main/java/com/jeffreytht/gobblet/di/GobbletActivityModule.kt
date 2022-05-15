@@ -1,43 +1,53 @@
 package com.jeffreytht.gobblet.di
 
-import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.model.AIPlayer
-import com.jeffreytht.gobblet.model.GobbletMode
-import com.jeffreytht.gobblet.ui.GobbletActivity
-import com.jeffreytht.gobblet.ui.GobbletActivityViewModel
+import com.jeffreytht.gobblet.ui.GameActivity
+import com.jeffreytht.gobblet.ui.GameActivityViewModel
+import com.jeffreytht.gobblet.ui.GameSettingProvider
 import com.jeffreytht.gobblet.util.DialogBuilder
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import dagger.Module
 import dagger.Provides
-import javax.inject.Named
 
-@Module
-interface GobbletActivityModule {
+@Module(includes = [GobbletSettingModule::class])
+abstract class GobbletActivityModule {
     companion object {
         @Provides
+        fun providesAIPlayer(
+            gameSettingProvider: GameSettingProvider,
+            resourcesProvider: ResourcesProvider
+        ): AIPlayer {
+            return AIPlayer(gameSettingProvider, resourcesProvider)
+        }
+
+        @Provides
         fun providesGobbletActivityViewModel(
-            gobbletActivity: GobbletActivity,
-            context: Context,
-            @Named(DIMENSION) dimension: Int,
-            @Named(GOBBLET_MODE) @GobbletMode.Mode gobbletMode: Int,
+            gobbletActivity: GameActivity,
+            gameSettingProvider: GameSettingProvider,
             resourcesProvider: ResourcesProvider,
             dialogBuilder: DialogBuilder,
             aiPlayer: AIPlayer
-        ): GobbletActivityViewModel {
+        ): GameActivityViewModel {
             return ViewModelProvider(
                 gobbletActivity,
                 GobbletActivityViewModelFactory(
-                    dimension,
-                    context,
-                    gobbletMode,
+                    gobbletActivity,
+                    gameSettingProvider,
                     resourcesProvider,
                     dialogBuilder,
                     aiPlayer
                 )
             ).get(
-                GobbletActivityViewModel::class.java
+                GameActivityViewModel::class.java
             )
         }
+
+        @Provides
+        fun providesDialogBuilder(activity: GameActivity): DialogBuilder {
+            return DialogBuilder(activity)
+        }
     }
+
+    abstract fun contributeGobbletActivity(): GameActivity
 }

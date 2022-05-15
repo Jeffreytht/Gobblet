@@ -8,14 +8,14 @@
 
         <variable
             name="vm"
-            type="com.jeffreytht.gobblet.ui.GobbletActivityViewModel" />
+            type="com.jeffreytht.gobblet.ui.GameActivityViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_gradient"
-        tools:context=".ui.GobbletActivity">
+        tools:context=".ui.GameActivity">
 
         <TextView
             android:id="@+id/textViewPlayerTurn"

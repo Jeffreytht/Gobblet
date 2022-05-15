@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.NO_COLOR
+import com.jeffreytht.gobblet.ui.GameSettingProvider
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import io.reactivex.rxjava3.core.Single
 import java.io.InputStreamReader
@@ -14,10 +15,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class AIPlayer(
-    @Peace.Color val aiColor: Int,
-    @Peace.Color private val playerColor: Int,
-    @Difficulty private val difficulty: Int,
-    private val dimension: Int,
+    gameSettingProvider: GameSettingProvider,
     resourcesProvider: ResourcesProvider
 ) {
     companion object {
@@ -33,13 +31,29 @@ class AIPlayer(
         )
     }
 
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
     @IntDef(EASY, MEDIUM, HARD)
     @Retention(AnnotationRetention.SOURCE)
     annotation class Difficulty
 
+    @Peace.Color
+    val aiColor: Int
+
+    @Peace.Color
+    private val playerColor: Int
+
+    @Difficulty
+    private val difficulty: Int
+    private val dimension: Int
     private val cache: HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>
 
     init {
+        val gameSetting = gameSettingProvider.getGameSetting()
+        aiColor = gameSetting.player2Color
+        playerColor = gameSetting.player1Color
+        difficulty = gameSetting.difficulty
+        dimension = gameSetting.dimension
+
         val sb = StringBuilder()
         val reader = InputStreamReader(
             resourcesProvider.getRawResource(CACHES[dimension] ?: R.raw.cache_4x4),

@@ -4,8 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.jeffreytht.gobblet.R
-import com.jeffreytht.gobblet.model.GobbletMode.Companion.SINGLE_PLAYER
-import com.jeffreytht.gobblet.model.GobbletMode.Companion.TWO_PLAYERS
+import com.jeffreytht.gobblet.model.Game
 import com.jeffreytht.gobblet.util.GobbletController
 
 class HomeActivityViewModel constructor(private val gobbletController: GobbletController) :
@@ -14,11 +13,11 @@ class HomeActivityViewModel constructor(private val gobbletController: GobbletCo
     var volumeIcon = ObservableField<@DrawableRes Int>(getVolumeIcons())
 
     fun onSinglePlayerClicked() {
-        gobbletController.update(SINGLE_PLAYER)
+        gobbletController.update(Game.SINGLE_PLAYER)
     }
 
     fun onTwoPlayersClicked() {
-        gobbletController.update(TWO_PLAYERS)
+        gobbletController.update(Game.TWO_PLAYERS)
     }
 
     fun onVolumeClicked() {

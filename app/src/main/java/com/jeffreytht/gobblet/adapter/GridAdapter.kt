@@ -8,10 +8,10 @@ import android.widget.LinearLayout
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.jeffreytht.gobblet.R
-import com.jeffreytht.gobblet.databinding.GobbletGridItemBinding
-import com.jeffreytht.gobblet.model.GameInteractor
+import com.jeffreytht.gobblet.databinding.GameGridItemBinding
 import com.jeffreytht.gobblet.model.Grid
 import com.jeffreytht.gobblet.model.Peace
+import com.jeffreytht.gobblet.util.GameInteractor
 import com.jeffreytht.gobblet.util.PeaceHandler
 import com.jeffreytht.gobblet.util.ResourcesProvider
 
@@ -24,7 +24,7 @@ class GridAdapter(
     private val peacesSet = HashMap<Peace, Grid>()
 
     class GridHolder(
-        binding: GobbletGridItemBinding,
+        binding: GameGridItemBinding,
         peaceHandler: PeaceHandler,
         private val parentHeight: Int,
         private val resourcesProvider: ResourcesProvider
@@ -82,7 +82,7 @@ class GridAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GridHolder {
         val inflater = LayoutInflater.from(parent.context)
         val rowHeight = parent.measuredHeight / row
-        val binding = GobbletGridItemBinding.inflate(inflater, parent, false)
+        val binding = GameGridItemBinding.inflate(inflater, parent, false)
             .apply {
                 root.layoutParams.height = rowHeight
             }

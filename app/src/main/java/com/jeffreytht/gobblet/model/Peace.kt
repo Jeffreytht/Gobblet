@@ -27,7 +27,7 @@ data class Peace(
     annotation class Size
 
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
-    @IntDef(GREEN, RED)
+    @IntDef(GREEN, RED, NO_COLOR)
     @Retention(AnnotationRetention.SOURCE)
     annotation class Color
 

@@ -15,7 +15,7 @@
             android:value="@string/GOOGLE_ADMOB_UNIT_ID" />
 
         <activity
-            android:name=".ui.GobbletActivity"
+            android:name=".ui.GameActivity"
             android:exported="false" />
         <activity
             android:name=".ui.HomeActivity"

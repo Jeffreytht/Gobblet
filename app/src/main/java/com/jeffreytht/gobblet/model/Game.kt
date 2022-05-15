@@ -1,15 +1,28 @@
 package com.jeffreytht.gobblet.model
 
+import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
+import androidx.annotation.IntDef
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
+import com.jeffreytht.gobblet.util.GameInteractor
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.*
 import kotlin.math.pow
 
-class Game(val dimension: Int) {
+class Game(private val gameSetting: GameSetting) {
+    companion object {
+        const val SINGLE_PLAYER = 1
+        const val TWO_PLAYERS = 2
+    }
+
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
+    @IntDef(SINGLE_PLAYER, TWO_PLAYERS)
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class Mode
+
     private val gameInteractors = HashSet<GameInteractor>()
     private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
     private val winnerSubject = BehaviorSubject.createDefault(Winner.NO_WINNER)
@@ -18,10 +31,6 @@ class Game(val dimension: Int) {
     val peaces = hashMapOf(
         GREEN to initPeaces(GREEN, R.drawable.ic_green_large_peace),
         RED to initPeaces(RED, R.drawable.ic_red_large_peace)
-    )
-    val peacesMap = hashMapOf(
-        GREEN to peaces[GREEN],
-        RED to peaces[RED]
     )
 
     fun registerGameInteractor(gameInteractor: Collection<GameInteractor>) {
@@ -33,11 +42,7 @@ class Game(val dimension: Int) {
     }
 
     private fun isValidMove(peace: Peace, grid: Grid): Boolean {
-        return if (grid.peaces.isEmpty()) {
-            true
-        } else {
-            peace.size > grid.peaces.peek().size
-        }
+        return grid.peaces.isEmpty() || peace.size > grid.peaces.peek().size
     }
 
     fun move(peace: Peace, grid: Grid) {
@@ -62,9 +67,9 @@ class Game(val dimension: Int) {
         val winner = HashMap<@Peace.Color Int, Winner>()
 
         // Check row
-        for (i in 0 until dimension) {
+        for (i in 0 until gameSetting.dimension) {
             var gameOver = true
-            for (j in 1 until dimension) {
+            for (j in 1 until gameSetting.dimension) {
                 if (grids[i][j - 1].peaces.empty() ||
                     grids[i][j].peaces.empty() ||
                     grids[i][j - 1].peaces.peek().color != grids[i][j].peaces.peek().color
@@ -84,9 +89,9 @@ class Game(val dimension: Int) {
         }
 
         // Check col
-        for (i in 0 until dimension) {
+        for (i in 0 until gameSetting.dimension) {
             var gameOver = true
-            for (j in 1 until dimension) {
+            for (j in 1 until gameSetting.dimension) {
                 if (grids[j - 1][i].peaces.empty() ||
                     grids[j][i].peaces.empty() ||
                     grids[j - 1][i].peaces.peek().color != grids[j][i].peaces.peek().color
@@ -107,7 +112,7 @@ class Game(val dimension: Int) {
 
         // Check diagonal
         var gameOver = true
-        for (i in 1 until dimension) {
+        for (i in 1 until gameSetting.dimension) {
             if (grids[i - 1][i - 1].peaces.empty() ||
                 grids[i][i].peaces.empty() ||
                 grids[i][i].peaces.peek().color != grids[i - 1][i - 1].peaces.peek().color
@@ -127,20 +132,20 @@ class Game(val dimension: Int) {
 
         // Check diagonal
         gameOver = true
-        for (i in 1 until dimension) {
-            if (grids[i][dimension - i - 1].peaces.empty() ||
-                grids[i - 1][dimension - i].peaces.empty() ||
-                grids[i][dimension - i - 1].peaces.peek().color !=
-                grids[i - 1][dimension - i].peaces.peek().color
+        for (i in 1 until gameSetting.dimension) {
+            if (grids[i][gameSetting.dimension - i - 1].peaces.empty() ||
+                grids[i - 1][gameSetting.dimension - i].peaces.empty() ||
+                grids[i][gameSetting.dimension - i - 1].peaces.peek().color !=
+                grids[i - 1][gameSetting.dimension - i].peaces.peek().color
             ) {
                 gameOver = false
                 break
             }
         }
         if (gameOver) {
-            winner[grids[0][dimension - 1].peaces.peek().color] =
+            winner[grids[0][gameSetting.dimension - 1].peaces.peek().color] =
                 Winner(
-                    color = grids[0][dimension - 1].peaces.peek().color,
+                    color = grids[0][gameSetting.dimension - 1].peaces.peek().color,
                     line = Winner.RIGHT_DIAGONAL,
                     idx = 0
                 )
@@ -165,11 +170,12 @@ class Game(val dimension: Int) {
         return winnerSubject.hide()
     }
 
+    @SuppressLint("WrongConstant")
     private fun initPeaces(@Peace.Color color: Int, @DrawableRes res: Int): ArrayList<Peace> {
         val dataset = ArrayList<Peace>()
-        @Peace.Size var size = 10f.pow(dimension - 1).toInt()
-        for (i in 0 until dimension * (dimension - 1)) {
-            if (i > 0 && i % (dimension - 1) == 0) {
+        @Peace.Size var size = 10f.pow(gameSetting.dimension - 1).toInt()
+        for (i in 0 until gameSetting.dimension * (gameSetting.dimension - 1)) {
+            if (i > 0 && i % (gameSetting.dimension - 1) == 0) {
                 size /= 10
             }
             dataset.add(
@@ -186,9 +192,9 @@ class Game(val dimension: Int) {
 
     private fun initGrid(): ArrayList<ArrayList<Grid>> {
         val data = ArrayList<ArrayList<Grid>>()
-        for (i in 0 until dimension) {
+        for (i in 0 until gameSetting.dimension) {
             data.add(ArrayList())
-            for (j in 0 until dimension) {
+            for (j in 0 until gameSetting.dimension) {
                 data[i].add(
                     Grid(
                         row = i,

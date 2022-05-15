@@ -15,13 +15,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
+import com.jeffreytht.gobblet.MyApp
 import com.jeffreytht.gobblet.R
-import com.jeffreytht.gobblet.databinding.ActivityGobbletBinding
-import com.jeffreytht.gobblet.di.DaggerGameComponent
-import com.jeffreytht.gobblet.di.DaggerGridAdapterComponent
-import com.jeffreytht.gobblet.di.DaggerPeaceAdapterComponent
+import com.jeffreytht.gobblet.adapter.GridAdapter
+import com.jeffreytht.gobblet.adapter.PeacesAdapter
+import com.jeffreytht.gobblet.databinding.GameActivityBinding
+import com.jeffreytht.gobblet.di.AppDependencies
 import com.jeffreytht.gobblet.model.*
-import com.jeffreytht.gobblet.model.GobbletMode.Companion.SINGLE_PLAYER
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.util.DialogBuilder
@@ -34,66 +34,53 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
-class GobbletActivityViewModel(
-    private val dimension: Int,
+class GameActivityViewModel(
     context: Context,
-    @GobbletMode.Mode private val gobbletMode: Int,
+    gameSettingProvider: GameSettingProvider,
     private val resourcesProvider: ResourcesProvider,
     private val dialogBuilder: DialogBuilder,
     private val aiPlayer: AIPlayer
 ) : ViewModel(), PeaceHandler {
-    private val disposable = CompositeDisposable()
-    var observableTitle = ObservableField<String>()
-    var observableTitleColor = ObservableField<@ColorRes Int>(R.color.white)
-
     companion object {
         const val LINE_COLOR_DELAY = 300L
     }
 
-    private val game = DaggerGameComponent
-        .builder()
-        .withDimension(dimension)
-        .build()
-        .provideGame()
+    private val gameSetting = gameSettingProvider.getGameSetting()
+    private val disposable = CompositeDisposable()
+    private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
+    private val game: Game = Game(gameSetting)
+    private val gridAdapter: GridAdapter
 
-    private val gridAdapter = DaggerGridAdapterComponent
-        .builder()
-        .withPeaceHandler(this)
-        .withContext(context)
-        .withData(game.grids)
-        .build()
-        .providesGridAdapter()
+    var observableTitle = ObservableField<String>()
+    var observableTitleColor = ObservableField<@ColorRes Int>(R.color.white)
 
-    private val peacesAdapterMap = hashMapOf(
-        GREEN to DaggerPeaceAdapterComponent
-            .builder()
-            .withContext(context)
-            .withData(game.peacesMap[GREEN]!!)
-            .withPeaceHandler(this)
-            .build()
-            .providesPeacesAdapter(),
-
-        RED to DaggerPeaceAdapterComponent
-            .builder()
-            .withContext(context)
-            .withData(game.peacesMap[RED]!!)
-            .withPeaceHandler(this)
-            .build()
-            .providesPeacesAdapter(),
-    )
 
     init {
+        val dependencies =
+            ((context as Activity).application as MyApp).extractDependency(AppDependencies::class)
+                ?: throw Exception()
+
+        gridAdapter = GridAdapter(game.grids, this, dependencies.providesResourcesProvider())
+
+        for ((color, peaces) in game.peaces) {
+            peacesAdapterMap[color] = PeacesAdapter(
+                peaces,
+                this,
+                dependencies.providesResourcesProvider()
+            )
+        }
+
         game.registerGameInteractor(gridAdapter)
         game.registerGameInteractor(peacesAdapterMap.values)
     }
 
-    fun init(binding: ActivityGobbletBinding, context: Context) {
+    fun init(binding: GameActivityBinding, context: Context) {
         binding.vm = this
         binding.adViewGobblet.loadAd(AdRequest.Builder().build())
         binding.gobbletRecyclerView.layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             0,
-            dimension.toFloat()
+            gameSetting.dimension.toFloat()
         )
         initializePeaces(binding.recyclerViewRedPeaces, RED, context)
         initializePeaces(binding.recyclerViewGreenPeaces, GREEN, context)
@@ -111,7 +98,7 @@ class GobbletActivityViewModel(
                     )
                 },
             game.getPlayerTurnObservable()
-                .filter { gobbletMode == SINGLE_PLAYER && it == aiPlayer.aiColor }
+                .filter { gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor }
                 .observeOn(AndroidSchedulers.mainThread())
                 .map {
                     val grids = ArrayList<ArrayList<Grid>>()
@@ -138,8 +125,8 @@ class GobbletActivityViewModel(
                 .subscribe { (peace, grid) ->
                     var targetPeace = game.peaces[aiPlayer.aiColor]?.find { it.id == peace.id }
                     if (targetPeace == null) {
-                        for (i in 0 until dimension) {
-                            for (j in 0 until dimension) {
+                        for (i in 0 until gameSetting.dimension) {
+                            for (j in 0 until gameSetting.dimension) {
                                 if (game.grids[i][j].peaces.isNotEmpty()
                                     && game.grids[i][j].peaces.peek().color == peace.color
                                     && game.grids[i][j].peaces.peek().id == peace.id
@@ -162,23 +149,23 @@ class GobbletActivityViewModel(
                     val lines = ArrayList<Pair<Int, Int>>()
                     when (winner.line) {
                         Winner.ROW -> {
-                            for (i in 0 until game.dimension) {
+                            for (i in 0 until gameSetting.dimension) {
                                 lines.add(Pair(winner.idx, i))
                             }
                         }
                         Winner.COL -> {
-                            for (i in 0 until game.dimension) {
+                            for (i in 0 until gameSetting.dimension) {
                                 lines.add(Pair(i, winner.idx))
                             }
                         }
                         Winner.LEFT_DIAGONAL -> {
-                            for (i in 0 until game.dimension) {
+                            for (i in 0 until gameSetting.dimension) {
                                 lines.add(Pair(i, i))
                             }
                         }
                         Winner.RIGHT_DIAGONAL -> {
-                            for (i in 0 until game.dimension) {
-                                lines.add(Pair(i, game.dimension - 1 - i))
+                            for (i in 0 until gameSetting.dimension) {
+                                lines.add(Pair(i, gameSetting.dimension - 1 - i))
                             }
                         }
                     }
@@ -252,7 +239,7 @@ class GobbletActivityViewModel(
     ) {
         recyclerView.adapter = gridAdapter
         recyclerView.layoutManager =
-            object : GridLayoutManager(context, game.dimension) {
+            object : GridLayoutManager(context, gameSetting.dimension) {
                 override fun canScrollHorizontally(): Boolean = false
                 override fun canScrollVertically(): Boolean = false
             }
@@ -278,7 +265,7 @@ class GobbletActivityViewModel(
                 .filter { it.second == Winner.NO_WINNER }
                 .map { it.first }
                 .subscribe { it ->
-                    if (gobbletMode == SINGLE_PLAYER && it == aiPlayer.aiColor) {
+                    if (gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) {
                         return@subscribe
                     }
 
