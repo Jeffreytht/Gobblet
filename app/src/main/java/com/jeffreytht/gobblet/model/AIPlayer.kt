@@ -594,6 +594,7 @@ class AIPlayer(
                 for (k in 0 until dimension) {
                     for (l in 0 until dimension) {
                         if (i == k && j == l ||
+                            grids[k][l].peaces.isEmpty() ||
                             !canMovePeace(grids[k][l].peaces.peek(), grids[i][j])
                         ) {
                             continue
