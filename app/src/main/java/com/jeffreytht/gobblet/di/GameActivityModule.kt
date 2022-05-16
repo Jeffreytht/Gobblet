@@ -1,5 +1,6 @@
 package com.jeffreytht.gobblet.di
 
+import android.app.Activity
 import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.model.Game
@@ -8,15 +9,12 @@ import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.ui.GameActivity
 import com.jeffreytht.gobblet.ui.GameActivityViewModel
-import com.jeffreytht.gobblet.util.DialogBuilder
-import com.jeffreytht.gobblet.util.ResourcesProvider
-import com.jeffreytht.gobblet.util.SharedPreferenceUtil
-import com.jeffreytht.gobblet.util.SoundUtil
+import com.jeffreytht.gobblet.util.*
 import dagger.Module
 import dagger.Provides
 
-@Module
-abstract class GobbletActivityModule {
+@Module(includes = [NavigatorModule::class])
+abstract class GameActivityModule {
     companion object {
         @Provides
         fun providesAIPlayer(
@@ -27,23 +25,25 @@ abstract class GobbletActivityModule {
         }
 
         @Provides
-        fun providesGobbletActivityViewModel(
-            gobbletActivity: GameActivity,
+        fun providesGameActivityViewModel(
+            gameActivity: GameActivity,
             gameSetting: GameSetting,
             resourcesProvider: ResourcesProvider,
             dialogBuilder: DialogBuilder,
             aiPlayer: AIPlayer,
-            soundUtil: SoundUtil
+            soundUtil: SoundUtil,
+            navigator: Navigator
         ): GameActivityViewModel {
             return ViewModelProvider(
-                gobbletActivity,
-                GobbletActivityViewModelFactory(
-                    gobbletActivity,
+                gameActivity,
+                GameActivityViewModelFactory(
+                    gameActivity,
                     gameSetting,
                     resourcesProvider,
                     dialogBuilder,
                     aiPlayer,
-                    soundUtil
+                    soundUtil,
+                    navigator
                 )
             ).get(
                 GameActivityViewModel::class.java
@@ -57,7 +57,7 @@ abstract class GobbletActivityModule {
 
         @Provides
         fun providesGameSetting(
-            gobbletActivity: GameActivity,
+            gameActivity: GameActivity,
             sharedPreferenceUtil: SharedPreferenceUtil
         ): GameSetting {
             return GameSetting().apply {
@@ -65,13 +65,18 @@ abstract class GobbletActivityModule {
                 difficulty = sharedPreferenceUtil.getDifficulty()
                 player1Color = GREEN
                 player2Color = RED
-                mode = gobbletActivity.intent.getIntExtra(
+                mode = gameActivity.intent.getIntExtra(
                     GameActivity.GOBBLET_MODE,
                     Game.SINGLE_PLAYER
                 )
             }
         }
+
+        @Provides
+        fun providesActivity(gameActivity: GameActivity): Activity {
+            return gameActivity
+        }
     }
 
-    abstract fun contributeGobbletActivity(sharedPreferenceUtil: SharedPreferenceUtil): GameActivity
+    abstract fun contributeGameActivity(): GameActivity
 }

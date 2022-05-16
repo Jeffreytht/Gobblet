@@ -23,7 +23,7 @@ class GameActivity : DaggerAppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        viewModel.onBackPressed(this)
+        viewModel.onBackPressed()
     }
 
     override fun onDestroy() {

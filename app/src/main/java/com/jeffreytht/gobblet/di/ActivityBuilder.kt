@@ -11,8 +11,8 @@ abstract class ActivityBuilder {
     @ContributesAndroidInjector(modules = [HomeActivityModule::class])
     abstract fun bindHomeActivity(): HomeActivity
 
-    @ContributesAndroidInjector(modules = [GobbletActivityModule::class])
-    abstract fun bindGobbletActivity(): GameActivity
+    @ContributesAndroidInjector(modules = [GameActivityModule::class])
+    abstract fun bindGameActivity(): GameActivity
 
     @ContributesAndroidInjector(modules = [SettingActivityModule::class])
     abstract fun bindSettingActivity(): SettingActivity

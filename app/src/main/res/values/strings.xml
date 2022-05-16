@@ -8,7 +8,7 @@
     <string name="peace">Peace</string>
     <string name="player_turn">%1$s\'s turn</string>
     <string name="not_your_turn">It\'s not your turn</string>
-    <string name="player_win">%1$s win!!!</string>
+    <string name="player_win">%1$s win!</string>
     <string name="green">Green</string>
     <string name="red">Red</string>
     <string name="quit_game_title">Give up?</string>

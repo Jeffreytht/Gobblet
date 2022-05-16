@@ -38,6 +38,7 @@ class GameActivityViewModel(
     private val resourcesProvider: ResourcesProvider,
     private val dialogBuilder: DialogBuilder,
     private val aiPlayer: AIPlayer,
+    private val navigator: Navigator
 ) : ViewModel(), PeaceHandler {
     companion object {
         const val LINE_COLOR_DELAY = 300L
@@ -300,7 +301,7 @@ class GameActivityViewModel(
         game.move(peace, grid)
     }
 
-    fun onBackPressed(activity: Activity) {
+    fun onBackPressed() {
         soundUtil.play(Sound.CLICK)
         game
             .getWinnerObservable()
@@ -316,11 +317,11 @@ class GameActivityViewModel(
                     ) { _: DialogInterface, button: Int ->
                         soundUtil.play(Sound.CLICK)
                         if (button == DialogInterface.BUTTON_POSITIVE) {
-                            activity.finish()
+                            navigator.finish()
                         }
                     }
                 } else {
-                    activity.finish()
+                    navigator.finish()
                 }
             }
     }
