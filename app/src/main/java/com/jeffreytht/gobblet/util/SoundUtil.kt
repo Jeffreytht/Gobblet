@@ -40,5 +40,8 @@ class SoundUtil(
 
         val mediaPlayer = MediaPlayer.create(context, type)
         mediaPlayer.start()
+        mediaPlayer.setOnCompletionListener {
+            it.release()
+        }
     }
 }
