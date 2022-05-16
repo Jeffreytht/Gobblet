@@ -1,4 +1,4 @@
-package com.jeffreytht.gobblet.ui
+package com.jeffreytht.gobblet.util
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -18,15 +18,23 @@ interface Sound {
     annotation class Type
 }
 
-class SoundUtil(private val context: Context) {
-    private var isSoundOn = true
+class SoundUtil(
+    private val context: Context,
+    private val sharedPreferenceUtil: SharedPreferenceUtil
+) {
+    private var mIsVolumeOn = sharedPreferenceUtil.getVolume()
+
+    fun isVolumeOn(): Boolean {
+        return mIsVolumeOn
+    }
 
     fun enableSound(enable: Boolean) {
-        isSoundOn = enable
+        mIsVolumeOn = enable
+        sharedPreferenceUtil.setVolume(enable)
     }
 
     fun play(@Sound.Type type: Int) {
-        if (!isSoundOn) {
+        if (!mIsVolumeOn) {
             return
         }
 

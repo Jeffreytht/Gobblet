@@ -3,8 +3,8 @@ package com.jeffreytht.gobblet.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.ui.HomeActivityViewModel
-import com.jeffreytht.gobblet.ui.SoundUtil
 import com.jeffreytht.gobblet.util.GobbletController
+import com.jeffreytht.gobblet.util.SoundUtil
 
 class ActivityViewModelFactory(
     private val gobbletController: GobbletController,

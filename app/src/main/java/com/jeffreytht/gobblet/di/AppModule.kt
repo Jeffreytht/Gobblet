@@ -1,8 +1,9 @@
 package com.jeffreytht.gobblet.di
 
 import android.app.Application
-import com.jeffreytht.gobblet.ui.SoundUtil
 import com.jeffreytht.gobblet.util.ResourcesProvider
+import com.jeffreytht.gobblet.util.SharedPreferenceUtil
+import com.jeffreytht.gobblet.util.SoundUtil
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -18,8 +19,17 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun providesSoundUtil(application: Application): SoundUtil {
-            return SoundUtil(application)
+        fun providesSoundUtil(
+            application: Application,
+            sharedPreferenceUtil: SharedPreferenceUtil
+        ): SoundUtil {
+            return SoundUtil(application, sharedPreferenceUtil)
+        }
+
+        @Singleton
+        @Provides
+        fun providesSharedPreferenceUtil(application: Application): SharedPreferenceUtil {
+            return SharedPreferenceUtil(application)
         }
     }
 }

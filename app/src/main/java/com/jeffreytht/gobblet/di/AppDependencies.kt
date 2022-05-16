@@ -1,7 +1,7 @@
 package com.jeffreytht.gobblet.di
 
-import com.jeffreytht.gobblet.ui.SoundUtil
 import com.jeffreytht.gobblet.util.ResourcesProvider
+import com.jeffreytht.gobblet.util.SoundUtil
 
 interface AppDependencies {
     fun providesResourcesProvider(): ResourcesProvider

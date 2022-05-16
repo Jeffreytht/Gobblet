@@ -6,13 +6,15 @@ import androidx.lifecycle.ViewModel
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Game
 import com.jeffreytht.gobblet.util.GobbletController
+import com.jeffreytht.gobblet.util.Sound
+import com.jeffreytht.gobblet.util.SoundUtil
 
 class HomeActivityViewModel(
     private val gobbletController: GobbletController,
     private val soundUtil: SoundUtil
 ) :
     ViewModel() {
-    private var isVolumeOn = true
+    private var isVolumeOn = soundUtil.isVolumeOn()
     var volumeIcon = ObservableField<@DrawableRes Int>(getVolumeIcons())
 
     fun onSinglePlayerClicked() {
