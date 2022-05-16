@@ -1,6 +1,5 @@
 package com.jeffreytht.gobblet.ui
 
-import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
@@ -14,25 +13,21 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
-import com.jeffreytht.gobblet.MyApp
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.adapter.GridAdapter
 import com.jeffreytht.gobblet.adapter.PeacesAdapter
 import com.jeffreytht.gobblet.databinding.GameActivityBinding
-import com.jeffreytht.gobblet.di.AppDependencies
 import com.jeffreytht.gobblet.model.*
 import com.jeffreytht.gobblet.model.Peace.Companion.GREEN
 import com.jeffreytht.gobblet.model.Peace.Companion.RED
 import com.jeffreytht.gobblet.util.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 class GameActivityViewModel(
-    context: Context,
     private val gameSetting: GameSetting,
     private val soundUtil: SoundUtil,
     private val resourcesProvider: ResourcesProvider,
@@ -45,30 +40,52 @@ class GameActivityViewModel(
     }
 
     private val disposable = CompositeDisposable()
+    private val gridAdapter: GridAdapter
     private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
     private val game: Game = Game(gameSetting)
-    private val gridAdapter: GridAdapter
 
     var observableTitle = ObservableField<String>()
     var observableTitleColor = ObservableField(R.color.white)
 
     init {
-        val dependencies =
-            ((context as Activity).application as MyApp).extractDependency(AppDependencies::class)
-                ?: throw Exception()
-
-        gridAdapter = GridAdapter(game.grids, this, dependencies.providesResourcesProvider())
-
-        for ((color, peaces) in game.peaces) {
-            peacesAdapterMap[color] = PeacesAdapter(
-                peaces,
-                this,
-                dependencies.providesResourcesProvider()
-            )
+        gridAdapter = GridAdapter(game.grids, this, resourcesProvider)
+        for ((color, _) in game.peaces) {
+            peacesAdapterMap[color] = PeacesAdapter(game.peaces[color]!!, this, resourcesProvider)
         }
-
+        newGame()
         game.registerGameInteractor(gridAdapter)
         game.registerGameInteractor(peacesAdapterMap.values)
+    }
+
+    private fun newGame() {
+        game.reset()
+        gridAdapter.resetData()
+        for ((color, _) in game.peaces) {
+            peacesAdapterMap[color]?.resetData()
+        }
+    }
+
+    fun onNewGameClicked() {
+        soundUtil.play(Sound.CLICK)
+        game
+            .getWinnerObservable()
+            .firstElement()
+            .subscribe {
+                if (it == Winner.NO_WINNER) {
+                    dialogBuilder.showDialog(
+                        R.string.quit_game_title,
+                        R.string.quit_game_message,
+                        R.drawable.ic_green_large_peace,
+                        R.string.yes,
+                        R.string.no,
+                    ) { _: DialogInterface, _: Int ->
+                        soundUtil.play(Sound.CLICK)
+                        newGame()
+                    }
+                } else {
+                    newGame()
+                }
+            }
     }
 
     fun initView(binding: GameActivityBinding, context: Context) {
@@ -94,66 +111,19 @@ class GameActivityViewModel(
                         )
                     )
                 }
-                .skip(1)
-                .subscribe {
-                    soundUtil.play(Sound.CLICK)
-                },
-            Observable.combineLatest(
-                game.getPlayerTurnObservable(),
-                game.getWinnerObservable()
-            ) { o1, o2 -> Pair(o1, o2) }
-                .filter {
-                    it.second == Winner.NO_WINNER
-                            && gameSetting.mode == Game.SINGLE_PLAYER
-                            && it.first == aiPlayer.aiColor
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .map {
-                    val grids = ArrayList<ArrayList<Grid>>()
-                    for (i in 0 until game.grids.size) {
-                        grids.add(ArrayList())
-                        for (j in 0 until game.grids.size) {
-                            grids[i].add(game.grids[i][j].deepCopy())
-                        }
-                    }
-                    val peaces = HashMap<@Peace.Color Int, ArrayList<Peace>>()
-                    for (elem in game.peaces) {
-                        peaces[elem.key] = ArrayList()
-                        for (peace in elem.value) {
-                            peaces[elem.key]?.add(peace.copy())
-                        }
-                    }
-                    Pair(grids, peaces)
-                }
+                .filter { gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor }
                 .observeOn(Schedulers.computation())
-                .flatMapSingle {
-                    aiPlayer.getNextMove(it.first, it.second)
-                }
+                .flatMapSingle { aiPlayer.getNextMove(game.grids, game.peaces) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { (peace, grid) ->
-                    var targetPeace = game.peaces[aiPlayer.aiColor]?.find { it.id == peace.id }
-                    if (targetPeace == null) {
-                        for (i in 0 until gameSetting.dimension) {
-                            for (j in 0 until gameSetting.dimension) {
-                                if (game.grids[i][j].peaces.isNotEmpty()
-                                    && game.grids[i][j].peaces.peek().color == peace.color
-                                    && game.grids[i][j].peaces.peek().id == peace.id
-                                ) {
-                                    targetPeace = game.grids[i][j].peaces.peek()
-                                }
-                            }
-                        }
-                    }
-                    game.move(targetPeace!!, game.grids[grid.row][grid.col])
+                    soundUtil.play(Sound.CLICK)
+                    game.move(peace, grid)
                 },
             game
                 .getWinnerObservable()
                 .distinctUntilChanged()
+                .filter { it != Winner.NO_WINNER }
                 .flatMapCompletable { winner ->
-                    if (winner == Winner.NO_WINNER) {
-                        return@flatMapCompletable Completable.complete()
-                    }
-
                     val lines = ArrayList<Pair<Int, Int>>()
                     when (winner.line) {
                         Winner.ROW -> {
@@ -242,7 +212,6 @@ class GameActivityViewModel(
                             observableTitle.set(winnerMessage)
                         }.toList().ignoreElement()
                 }.subscribe()
-
         )
     }
 
@@ -269,25 +238,25 @@ class GameActivityViewModel(
 
     override fun onLongClick(peace: Peace, imageView: ImageView): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Observable.combineLatest(
-                game.getPlayerTurnObservable(),
-                game.getWinnerObservable()
-            ) { playerTurn, winner -> Pair(playerTurn, winner) }
+            game
+                .getWinnerObservable()
                 .firstElement()
-                .filter { it.second == Winner.NO_WINNER }
-                .map { it.first }
-                .subscribe { it ->
-                    if (gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) {
-                        return@subscribe
-                    }
-
+                .filter { it == Winner.NO_WINNER }
+                .flatMap {
+                    game.getPlayerTurnObservable().firstElement()
+                }
+                .filter { !(gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) }
+                .map {
                     if (it != peace.color) {
                         resourcesProvider.makeToast(
                             resourcesProvider.getString(R.string.not_your_turn),
                             Toast.LENGTH_SHORT
                         )
-                        return@subscribe
                     }
+                    it == peace.color
+                }
+                .filter { it }
+                .subscribe {
                     val myShadow = resourcesProvider.getDrawable(peace.resId)?.let {
                         PeaceShadow(it, imageView)
                     }
@@ -298,7 +267,9 @@ class GameActivityViewModel(
     }
 
     override fun onDropToGrid(peace: Peace, grid: Grid) {
-        game.move(peace, grid)
+        if (game.move(peace, grid)) {
+            soundUtil.play(Sound.CLICK)
+        }
     }
 
     fun onBackPressed() {

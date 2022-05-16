@@ -26,12 +26,26 @@ class Game(private val gameSetting: GameSetting) {
     private val gameInteractors = HashSet<GameInteractor>()
     private var playerTurnSubject = BehaviorSubject.createDefault(GREEN)
     private val winnerSubject = BehaviorSubject.createDefault(Winner.NO_WINNER)
-
-    val grids = initGrid()
-    val peaces = hashMapOf(
-        GREEN to initPeaces(GREEN, R.drawable.ic_green_large_peace),
-        RED to initPeaces(RED, R.drawable.ic_red_large_peace)
+    val grids = ArrayList<ArrayList<Grid>>()
+    val peaces = hashMapOf<Int, ArrayList<Peace>>(
+        GREEN to ArrayList(),
+        RED to ArrayList()
     )
+
+    init {
+        reset()
+    }
+
+    fun reset() {
+        grids.clear()
+        grids.addAll(initGrid())
+        peaces[GREEN]?.clear()
+        peaces[GREEN]?.addAll(initPeaces(GREEN, R.drawable.ic_green_large_peace))
+        peaces[RED]?.clear()
+        peaces[RED]?.addAll(initPeaces(RED, R.drawable.ic_red_large_peace))
+        playerTurnSubject.onNext(GREEN)
+        winnerSubject.onNext(Winner.NO_WINNER)
+    }
 
     fun registerGameInteractor(gameInteractor: Collection<GameInteractor>) {
         gameInteractors.addAll(gameInteractor)
@@ -45,20 +59,21 @@ class Game(private val gameSetting: GameSetting) {
         return grid.peaces.isEmpty() || peace.size > grid.peaces.peek().size
     }
 
-    fun move(peace: Peace, grid: Grid) {
+    fun move(peace: Peace, grid: Grid): Boolean {
         if (!isValidMove(peace, grid) || winnerSubject.value != Winner.NO_WINNER) {
-            return
+            return false
         }
         for (i in gameInteractors) {
             i.movePeace(peace, grid)
         }
         endMove()
+        return true
     }
 
     private fun endMove() {
         val winner = getWinner()
         if (winner != Winner.NO_WINNER) {
-            winnerSubject.onNext(winner)
+            return winnerSubject.onNext(winner)
         }
         playerTurnSubject.onNext(if (playerTurnSubject.value == GREEN) RED else GREEN)
     }

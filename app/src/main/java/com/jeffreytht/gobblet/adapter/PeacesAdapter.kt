@@ -76,4 +76,8 @@ class PeacesAdapter(
         dataset.forEach { it.resId = resId }
         notifyItemRangeChanged(0, itemCount)
     }
+
+    fun resetData() {
+        notifyItemRangeChanged(0, itemCount)
+    }
 }

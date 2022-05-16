@@ -37,7 +37,6 @@ abstract class GameActivityModule {
             return ViewModelProvider(
                 gameActivity,
                 GameActivityViewModelFactory(
-                    gameActivity,
                     gameSetting,
                     resourcesProvider,
                     dialogBuilder,

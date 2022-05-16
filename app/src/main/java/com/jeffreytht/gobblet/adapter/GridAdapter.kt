@@ -81,7 +81,7 @@ class GridAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GridHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val rowHeight = parent.measuredHeight / row
+        val rowHeight = parent.measuredHeight / row()
         val binding = GameGridItemBinding.inflate(inflater, parent, false)
             .apply {
                 root.layoutParams.height = rowHeight
@@ -90,30 +90,34 @@ class GridAdapter(
     }
 
     override fun onBindViewHolder(holder: GridHolder, position: Int) {
-        holder.initPeaces(data[position / col][position % col])
+        holder.initPeaces(data[position / col()][position % col()])
     }
 
-    override fun getItemCount(): Int = row * col
+    override fun getItemCount(): Int = row() * col()
 
-    private val row: Int = data.size
+    private fun row(): Int {
+        return data.size
+    }
 
-    private val col: Int = if (data.isEmpty()) 0 else data.first().size
+    private fun col(): Int {
+        return if (data.isEmpty()) 0 else data.first().size
+    }
 
     override fun movePeace(peace: Peace, grid: Grid) {
         peacesSet[peace]?.let {
             it.peaces.pop()
-            notifyItemChanged(it.row * col + it.col)
+            notifyItemChanged(it.row * col() + it.col)
         }
         with(grid) {
             peaces.push(peace)
             peacesSet[peace] = this
         }
-        notifyItemChanged(grid.row * col + grid.col)
+        notifyItemChanged(grid.row * col() + grid.col)
     }
 
     fun setGridBackground(@DrawableRes resId: Int, row: Int, col: Int) {
         data[row][col].background = resId
-        notifyItemChanged(row * this.col + col)
+        notifyItemChanged(row * this.col() + col)
     }
 
     fun setTopPeaceDrawable(@Peace.Color color: Int, @DrawableRes resId: Int) {
@@ -129,6 +133,10 @@ class GridAdapter(
                 }
             }
         }
+        notifyItemRangeChanged(0, itemCount)
+    }
+
+    fun resetData() {
         notifyItemRangeChanged(0, itemCount)
     }
 }

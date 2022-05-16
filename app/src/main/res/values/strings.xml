@@ -12,7 +12,7 @@
     <string name="green">Green</string>
     <string name="red">Red</string>
     <string name="quit_game_title">Give up?</string>
-    <string name="quit_game_message">Are you sure you want to give up and back to the main menu?</string>
+    <string name="quit_game_message">Are you sure you want to give up the current game?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="setting">Setting</string>
@@ -26,4 +26,5 @@
     <string name="easy">Easy</string>
     <string name="volume">volume</string>
     <string name="back">back</string>
+    <string name="new_game">New Game</string>
 </resources>
