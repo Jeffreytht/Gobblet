@@ -3,7 +3,6 @@ package com.jeffreytht.gobblet.model
 import androidx.annotation.IntDef
 import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Peace.Companion.NO_COLOR
-import com.jeffreytht.gobblet.ui.GameSettingProvider
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import io.reactivex.rxjava3.core.Single
 import kotlin.math.max
@@ -11,7 +10,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class AIPlayer(
-    gameSettingProvider: GameSettingProvider,
+    gameSetting: GameSetting,
     resourcesProvider: ResourcesProvider
 ) {
     companion object {
@@ -45,11 +44,12 @@ class AIPlayer(
         HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>()
 
     init {
-        val gameSetting = gameSettingProvider.getGameSetting()
-        aiColor = gameSetting.player2Color
-        playerColor = gameSetting.player1Color
-        difficulty = gameSetting.difficulty
-        dimension = gameSetting.dimension
+        gameSetting.let {
+            aiColor = it.player2Color
+            playerColor = it.player1Color
+            difficulty = it.difficulty
+            dimension = it.dimension
+        }
 
 //        val sb = StringBuilder()
 //        val reader = InputStreamReader(

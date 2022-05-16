@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.ui.HomeActivity
 import com.jeffreytht.gobblet.ui.HomeActivityViewModel
 import com.jeffreytht.gobblet.util.GobbletController
+import com.jeffreytht.gobblet.util.SettingController
 import com.jeffreytht.gobblet.util.SoundUtil
 import dagger.Module
 import dagger.Provides
@@ -14,12 +15,13 @@ abstract class HomeActivityModule {
         @Provides
         fun providesHomeActivityViewModel(
             homeActivity: HomeActivity,
+            settingController: SettingController,
             gobbletController: GobbletController,
             soundUtil: SoundUtil
         ): HomeActivityViewModel {
             return ViewModelProvider(
                 homeActivity,
-                ActivityViewModelFactory(gobbletController, soundUtil)
+                HomeActivityViewModelFactory(gobbletController, settingController, soundUtil)
             ).get(
                 HomeActivityViewModel::class.java
             )
@@ -28,6 +30,11 @@ abstract class HomeActivityModule {
         @Provides
         fun providesGobbletController(homeActivity: HomeActivity): GobbletController {
             return GobbletController(homeActivity)
+        }
+
+        @Provides
+        fun providesSettingController(homeActivity: HomeActivity): SettingController {
+            return SettingController(homeActivity)
         }
     }
 

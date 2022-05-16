@@ -1,7 +1,19 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <style name="Theme.Gobblet" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/bgRed</item>
+    </style>
+
+    <style name="Setting.Switch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="colorControlActivated">@color/peaceGreen</item>
+        <item name="colorSwitchThumbNormal">@color/white</item>
+        <item name="android:colorForeground">@color/grey</item>
+    </style>
+
+    <style name="Setting.SeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressDrawable">@drawable/seekbar_style</item>
+        <item name="android:thumb">@drawable/seekbar_thumb</item>
     </style>
 </resources>

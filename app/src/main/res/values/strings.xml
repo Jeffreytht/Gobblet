@@ -15,4 +15,15 @@
     <string name="quit_game_message">Are you sure you want to give up and back to the main menu?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="setting">Setting</string>
+    <string name="board">Board</string>
+    <string name="board_3x3">3x3</string>
+    <string name="board_4x4">4x4</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="sound">Sound</string>
+    <string name="medium">Medium</string>
+    <string name="hard">Hard</string>
+    <string name="easy">Easy</string>
+    <string name="volume">volume</string>
+    <string name="back">back</string>
 </resources>

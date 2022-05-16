@@ -1,21 +1,18 @@
 package com.jeffreytht.gobblet.ui
 
-import androidx.annotation.DrawableRes
-import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
-import com.jeffreytht.gobblet.R
 import com.jeffreytht.gobblet.model.Game
 import com.jeffreytht.gobblet.util.GobbletController
+import com.jeffreytht.gobblet.util.SettingController
 import com.jeffreytht.gobblet.util.Sound
 import com.jeffreytht.gobblet.util.SoundUtil
 
 class HomeActivityViewModel(
     private val gobbletController: GobbletController,
+    private val settingController: SettingController,
     private val soundUtil: SoundUtil
 ) :
     ViewModel() {
-    private var isVolumeOn = soundUtil.isVolumeOn()
-    var volumeIcon = ObservableField<@DrawableRes Int>(getVolumeIcons())
 
     fun onSinglePlayerClicked() {
         soundUtil.play(Sound.CLICK)
@@ -27,19 +24,8 @@ class HomeActivityViewModel(
         gobbletController.update(Game.TWO_PLAYERS)
     }
 
-    fun onVolumeClicked() {
-        isVolumeOn = !isVolumeOn
-        volumeIcon.set(getVolumeIcons())
-        soundUtil.enableSound(isVolumeOn)
+    fun onSettingClicked() {
         soundUtil.play(Sound.CLICK)
-    }
-
-    @DrawableRes
-    fun getVolumeIcons(): Int {
-        return if (isVolumeOn) {
-            R.drawable.ic_volume_up
-        } else {
-            R.drawable.ic_volume_off
-        }
+        settingController.update()
     }
 }

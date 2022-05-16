@@ -22,19 +22,19 @@ class SoundUtil(
     private val context: Context,
     private val sharedPreferenceUtil: SharedPreferenceUtil
 ) {
-    private var mIsVolumeOn = sharedPreferenceUtil.getVolume()
+    private var mIsSoundOn = sharedPreferenceUtil.getIsSoundOn()
 
-    fun isVolumeOn(): Boolean {
-        return mIsVolumeOn
+    fun isSoundOn(): Boolean {
+        return mIsSoundOn
     }
 
     fun enableSound(enable: Boolean) {
-        mIsVolumeOn = enable
-        sharedPreferenceUtil.setVolume(enable)
+        mIsSoundOn = enable
+        sharedPreferenceUtil.setSoundEnable(enable)
     }
 
     fun play(@Sound.Type type: Int) {
-        if (!mIsVolumeOn) {
+        if (!mIsSoundOn) {
             return
         }
 

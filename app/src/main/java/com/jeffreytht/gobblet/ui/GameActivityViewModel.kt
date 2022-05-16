@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.annotation.ColorRes
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.GridLayoutManager
@@ -34,25 +33,23 @@ import java.util.concurrent.TimeUnit
 
 class GameActivityViewModel(
     context: Context,
-    gameSettingProvider: GameSettingProvider,
+    private val gameSetting: GameSetting,
     private val soundUtil: SoundUtil,
     private val resourcesProvider: ResourcesProvider,
     private val dialogBuilder: DialogBuilder,
-    private val aiPlayer: AIPlayer
+    private val aiPlayer: AIPlayer,
 ) : ViewModel(), PeaceHandler {
     companion object {
         const val LINE_COLOR_DELAY = 300L
     }
 
-    private val gameSetting = gameSettingProvider.getGameSetting()
     private val disposable = CompositeDisposable()
     private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
     private val game: Game = Game(gameSetting)
     private val gridAdapter: GridAdapter
 
     var observableTitle = ObservableField<String>()
-    var observableTitleColor = ObservableField<@ColorRes Int>(R.color.white)
-
+    var observableTitleColor = ObservableField(R.color.white)
 
     init {
         val dependencies =
@@ -73,7 +70,7 @@ class GameActivityViewModel(
         game.registerGameInteractor(peacesAdapterMap.values)
     }
 
-    fun init(binding: GameActivityBinding, context: Context) {
+    fun initView(binding: GameActivityBinding, context: Context) {
         binding.vm = this
         binding.adViewGobblet.loadAd(AdRequest.Builder().build())
         binding.gobbletRecyclerView.layoutParams = LinearLayout.LayoutParams(
@@ -104,7 +101,11 @@ class GameActivityViewModel(
                 game.getPlayerTurnObservable(),
                 game.getWinnerObservable()
             ) { o1, o2 -> Pair(o1, o2) }
-                .filter { it.second == Winner.NO_WINNER && gameSetting.mode == Game.SINGLE_PLAYER && it.first == aiPlayer.aiColor }
+                .filter {
+                    it.second == Winner.NO_WINNER
+                            && gameSetting.mode == Game.SINGLE_PLAYER
+                            && it.first == aiPlayer.aiColor
+                }
                 .observeOn(AndroidSchedulers.mainThread())
                 .map {
                     val grids = ArrayList<ArrayList<Grid>>()
@@ -261,8 +262,7 @@ class GameActivityViewModel(
         @Peace.Color color: Int,
         context: Context
     ) {
-        recyclerView.layoutManager =
-            LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         recyclerView.adapter = peacesAdapterMap[color]
     }
 
