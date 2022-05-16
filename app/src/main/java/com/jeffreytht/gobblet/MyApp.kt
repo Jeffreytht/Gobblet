@@ -13,6 +13,7 @@ import kotlin.reflect.KClass
 class MyApp : DaggerApplication(), DependencyProvider {
     @Inject
     lateinit var appComponent: AppComponent
+    var adsCount: Int = -1
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
         appComponent = DaggerAppComponent.factory().create(this)

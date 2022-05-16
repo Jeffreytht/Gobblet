@@ -33,7 +33,8 @@ class GameActivityViewModel(
     private val resourcesProvider: ResourcesProvider,
     private val dialogBuilder: DialogBuilder,
     private val aiPlayer: AIPlayer,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val adUtil: AdUtil
 ) : ViewModel(), PeaceHandler {
     companion object {
         const val LINE_COLOR_DELAY = 300L
@@ -48,6 +49,7 @@ class GameActivityViewModel(
     var observableTitleColor = ObservableField(R.color.white)
 
     init {
+        adUtil.startLoad()
         gridAdapter = GridAdapter(game.grids, this, resourcesProvider)
         for ((color, _) in game.peaces) {
             peacesAdapterMap[color] = PeacesAdapter(game.peaces[color]!!, this, resourcesProvider)
@@ -63,6 +65,7 @@ class GameActivityViewModel(
         for ((color, _) in game.peaces) {
             peacesAdapterMap[color]?.resetData()
         }
+        adUtil.showAds()
     }
 
     fun onNewGameClicked() {
@@ -274,6 +277,7 @@ class GameActivityViewModel(
 
     fun onBackPressed() {
         soundUtil.play(Sound.CLICK)
+        adUtil.showAds()
         game
             .getWinnerObservable()
             .firstElement()

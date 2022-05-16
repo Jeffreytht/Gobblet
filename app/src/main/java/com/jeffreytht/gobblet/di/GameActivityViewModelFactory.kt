@@ -5,10 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.jeffreytht.gobblet.model.AIPlayer
 import com.jeffreytht.gobblet.model.GameSetting
 import com.jeffreytht.gobblet.ui.GameActivityViewModel
-import com.jeffreytht.gobblet.util.DialogBuilder
-import com.jeffreytht.gobblet.util.Navigator
-import com.jeffreytht.gobblet.util.ResourcesProvider
-import com.jeffreytht.gobblet.util.SoundUtil
+import com.jeffreytht.gobblet.util.*
 
 class GameActivityViewModelFactory(
     private val gameSetting: GameSetting,
@@ -16,7 +13,8 @@ class GameActivityViewModelFactory(
     private val dialogBuilder: DialogBuilder,
     private val aiPlayer: AIPlayer,
     private val soundUtil: SoundUtil,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val adUtil: AdUtil
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -27,7 +25,8 @@ class GameActivityViewModelFactory(
             resourcesProvider,
             dialogBuilder,
             aiPlayer,
-            navigator
+            navigator,
+            adUtil
         ) as T
     }
 }

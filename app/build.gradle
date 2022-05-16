@@ -19,14 +19,21 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        resValue("string", "GOOGLE_ADMOB_UNIT_ID", configProperties['GOOGLE_ADMOB_UNIT_ID'])
-        resValue("string", "GOOGLE_ADMOB_TEST_UNIT_ID", configProperties['GOOGLE_ADMOB_TEST_UNIT_ID'])
     }
 
     buildTypes {
+        debug {
+            resValue("string", "GOOGLE_ADMOB_UNIT_ID", configProperties['GOOGLE_ADMOB_UNIT_ID'])
+            resValue("string", "GOOGLE_ADMOB_BANNER_UNIT_ID", configProperties['GOOGLE_ADMOB_TEST_BANNER_UNIT_ID'])
+            resValue("string", "GOOGLE_ADMOB_INTERSTITIAL_UNIT_ID", configProperties['GOOGLE_ADMOB_TEST_INTERSTITIAL_UNIT_ID'])
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue("string", "GOOGLE_ADMOB_UNIT_ID", configProperties['GOOGLE_ADMOB_UNIT_ID'])
+            resValue("string", "GOOGLE_ADMOB_BANNER_UNIT_ID", configProperties['GOOGLE_ADMOB_BANNER_UNIT_ID'])
+            resValue("string", "GOOGLE_ADMOB_INTERSTITIAL_UNIT_ID", configProperties['GOOGLE_ADMOB_INTERSTITIAL_UNIT_ID'])
         }
     }
     compileOptions {
