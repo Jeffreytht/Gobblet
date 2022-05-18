@@ -33,14 +33,14 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="150dp"
+            android:layout_marginTop="16dp"
             android:text="@string/app_name"
             android:textColor="@color/white"
             android:textSize="64sp"
             android:textStyle="bold"
+            ads:layout_constraintTop_toBottomOf="@+id/guideline2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/textView2"
@@ -116,5 +116,12 @@
             ads:layout_constraintEnd_toEndOf="parent"
             ads:layout_constraintTop_toTopOf="parent"
             ads:srcCompat="@drawable/ic_settings" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            ads:layout_constraintGuide_percent="0.1" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

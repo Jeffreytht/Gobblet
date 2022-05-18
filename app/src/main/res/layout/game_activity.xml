@@ -19,14 +19,19 @@
 
         <TextView
             android:id="@+id/textViewPlayerTurn"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:lines="1"
             android:text="@{vm.observableTitle}"
             android:textColor="@{context.getColor(vm.observableTitleColor)}"
             android:textSize="32sp"
             android:textStyle="bold"
+            ads:autoSizeTextType="uniform"
+            ads:layout_constraintEnd_toStartOf="@+id/textView5"
+            ads:layout_constraintHorizontal_weight="2"
             ads:layout_constraintStart_toEndOf="@+id/imageView6"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -88,15 +93,19 @@
 
         <TextView
             android:id="@+id/textView5"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
+            android:lines="1"
             android:onClick="@{() -> vm.onNewGameClicked()}"
             android:text="@string/new_game"
             android:textColor="@color/white"
             android:textSize="18sp"
+            ads:autoSizeTextType="uniform"
             ads:layout_constraintBottom_toBottomOf="@+id/textViewPlayerTurn"
             ads:layout_constraintEnd_toEndOf="parent"
+            ads:layout_constraintHorizontal_weight="1"
+            ads:layout_constraintStart_toEndOf="@+id/textViewPlayerTurn"
             ads:layout_constraintTop_toTopOf="@+id/textViewPlayerTurn" />
 
 
