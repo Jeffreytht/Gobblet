@@ -240,32 +240,34 @@ class GameActivityViewModel(
     }
 
     override fun onLongClick(peace: Peace, imageView: ImageView): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            game
-                .getWinnerObservable()
-                .firstElement()
-                .filter { it == Winner.NO_WINNER }
-                .flatMap {
-                    game.getPlayerTurnObservable().firstElement()
+        game
+            .getWinnerObservable()
+            .firstElement()
+            .filter { it == Winner.NO_WINNER }
+            .flatMap {
+                game.getPlayerTurnObservable().firstElement()
+            }
+            .filter { !(gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) }
+            .map {
+                if (it != peace.color) {
+                    resourcesProvider.makeToast(
+                        resourcesProvider.getString(R.string.not_your_turn),
+                        Toast.LENGTH_SHORT
+                    )
                 }
-                .filter { !(gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) }
-                .map {
-                    if (it != peace.color) {
-                        resourcesProvider.makeToast(
-                            resourcesProvider.getString(R.string.not_your_turn),
-                            Toast.LENGTH_SHORT
-                        )
-                    }
-                    it == peace.color
+                it == peace.color
+            }
+            .filter { it }
+            .subscribe {
+                val myShadow = resourcesProvider.getDrawable(peace.resId)?.let {
+                    PeaceShadow(it, imageView)
                 }
-                .filter { it }
-                .subscribe {
-                    val myShadow = resourcesProvider.getDrawable(peace.resId)?.let {
-                        PeaceShadow(it, imageView)
-                    }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     imageView.startDragAndDrop(null, myShadow, peace, 0)
+                } else {
+                    imageView.startDrag(null, myShadow, peace, 0)
                 }
-        }
+            }
         return true
     }
 
