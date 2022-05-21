@@ -1,6 +1,5 @@
 package com.jeffreytht.gobblet.model
 
-import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import com.jeffreytht.gobblet.R
@@ -185,24 +184,14 @@ class Game(private val gameSetting: GameSetting) {
         return winnerSubject.hide()
     }
 
-    @SuppressLint("WrongConstant")
     private fun initPeaces(@Peace.Color color: Int, @DrawableRes res: Int): ArrayList<Peace> {
-        val dataset = ArrayList<Peace>()
-        @Peace.Size var size = 10f.pow(gameSetting.dimension - 1).toInt()
-        for (i in 0 until gameSetting.dimension * (gameSetting.dimension - 1)) {
-            if (i > 0 && i % (gameSetting.dimension - 1) == 0) {
-                size /= 10
+        return ArrayList<Peace>().apply {
+            for (i in gameSetting.dimension - 1 downTo 0) {
+                for (j in 0 until gameSetting.dimension - 1) {
+                    add(Peace(size, color, 10f.pow(i).toInt(), res))
+                }
             }
-            dataset.add(
-                Peace(
-                    id = i,
-                    color = color,
-                    size = size,
-                    resId = res
-                )
-            )
         }
-        return dataset
     }
 
     private fun initGrid(): ArrayList<ArrayList<Grid>> {

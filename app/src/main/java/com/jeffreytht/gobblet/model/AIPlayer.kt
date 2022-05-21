@@ -28,8 +28,6 @@ class AIPlayer(gameSetting: GameSetting) {
     @Difficulty
     private val difficulty: Int
     private val dimension: Int
-    private val cache =
-        HashMap<Int, HashMap<Int, HashMap<Int, HashMap<Int, HashMap<String, Int>>>>>()
 
     init {
         gameSetting.let {
@@ -81,53 +79,12 @@ class AIPlayer(gameSetting: GameSetting) {
         return res
     }
 
-    private fun encodeGrids(grids: ArrayList<ArrayList<Int>>): String {
-        val newEGrids = StringBuilder()
-        for (i in 0 until dimension) {
-            for (j in 0 until dimension) {
-                newEGrids.append(grids[i][j].toString().padStart(dimension, '0'))
-            }
-        }
-        return newEGrids.toString()
-    }
-
     private fun encodePeaces(peaces: ArrayList<Peace>): Int {
         return peaces.sumOf { it.size }
     }
 
     private fun canMove(peace: Int, grid: Int): Boolean {
         return peace > grid
-    }
-
-    @Deprecated("")
-    private fun checkCache(
-        turn: Int,
-        depth: Int,
-        aiPeaces: Int,
-        playerPeaces: Int,
-        grids: ArrayList<ArrayList<Int>>
-    ): Pair<Boolean, Int> {
-        cache[turn]?.get(depth)?.get(aiPeaces)?.get(playerPeaces)?.get(encodeGrids(grids))?.let {
-            return Pair(true, it)
-        }
-        return Pair(false, -1)
-    }
-
-    @Deprecated("")
-    private fun putCache(
-        turn: Int,
-        depth: Int,
-        aiPeaces: Int,
-        playerPeaces: Int,
-        eGrids: ArrayList<ArrayList<Int>>,
-        score: Int
-    ): Int {
-        cache
-            .getOrPut(turn) { HashMap() }
-            .getOrPut(depth) { HashMap() }
-            .getOrPut(aiPeaces) { HashMap() }
-            .getOrPut(playerPeaces) { HashMap() }[encodeGrids(eGrids)] = score
-        return score
     }
 
     private fun getScore(grids: ArrayList<ArrayList<Int>>): Int {
@@ -145,82 +102,57 @@ class AIPlayer(gameSetting: GameSetting) {
 
         // Check row
         for (i in 0 until dimension) {
-            var gameOver = true
-            for (j in 1 until dimension) {
-                if (gridsColor[i][j - 1] == NO_COLOR ||
-                    gridsColor[i][j] == NO_COLOR ||
-                    gridsColor[i][j - 1] != gridsColor[i][j]
-                ) {
-                    gameOver = false
-                    break
+            with(HashSet<Int>()) {
+                for (j in 0 until dimension) {
+                    add(gridsColor[i][j])
                 }
-            }
-            if (gameOver) {
-                return if (gridsColor[i][0] == aiColor) {
-                    AI_WIN
-                } else {
-                    AI_LOSE
+                if (size == 1 && first() != NO_COLOR) {
+                    when (first()) {
+                        aiColor -> return AI_WIN
+                        playerColor -> return AI_LOSE
+                    }
                 }
             }
         }
 
         // Check col
         for (i in 0 until dimension) {
-            var gameOver = true
-            for (j in 1 until dimension) {
-                if (gridsColor[j - 1][i] == NO_COLOR ||
-                    gridsColor[j][i] == NO_COLOR ||
-                    gridsColor[j - 1][i] != gridsColor[j][i]
-                ) {
-                    gameOver = false
-                    break
+            with(HashSet<Int>()) {
+                for (j in 0 until dimension) {
+                    add(gridsColor[j][i])
                 }
-            }
-            if (gameOver) {
-                return if (gridsColor[0][i] == aiColor) {
-                    AI_WIN
-                } else {
-                    AI_LOSE
+                if (size == 1 && first() != NO_COLOR) {
+                    when (first()) {
+                        aiColor -> return AI_WIN
+                        playerColor -> return AI_LOSE
+                    }
                 }
             }
         }
 
         // Check diagonal
-        var gameOver = true
-        for (i in 1 until dimension) {
-            if (gridsColor[i - 1][i - 1] == NO_COLOR ||
-                gridsColor[i][i] == NO_COLOR ||
-                gridsColor[i][i] != gridsColor[i - 1][i - 1]
-            ) {
-                gameOver = false
-                break
+        with(HashSet<Int>()) {
+            for (i in 0 until dimension) {
+                add(gridsColor[i][i])
             }
-        }
-        if (gameOver) {
-            return if (gridsColor[0][0] == aiColor) {
-                AI_WIN
-            } else {
-                AI_LOSE
+            if (size == 1 && first() != NO_COLOR) {
+                when (first()) {
+                    aiColor -> return AI_WIN
+                    playerColor -> return AI_LOSE
+                }
             }
         }
 
         // Check diagonal
-        gameOver = true
-        for (i in 1 until dimension) {
-            if (gridsColor[i][dimension - i - 1] == NO_COLOR ||
-                gridsColor[i - 1][dimension - i] == NO_COLOR ||
-                gridsColor[i][dimension - i - 1] !=
-                gridsColor[i - 1][dimension - i]
-            ) {
-                gameOver = false
-                break
+        with(HashSet<Int>()) {
+            for (i in 0 until dimension) {
+                add(gridsColor[i][dimension - i - 1])
             }
-        }
-        if (gameOver) {
-            return if (gridsColor[0][dimension - 1] == aiColor) {
-                AI_WIN
-            } else {
-                AI_LOSE
+            if (size == 1) {
+                when (first()) {
+                    aiColor -> return AI_WIN
+                    playerColor -> return AI_LOSE
+                }
             }
         }
 
@@ -228,13 +160,9 @@ class AIPlayer(gameSetting: GameSetting) {
         var score = 0
         for (i in 0 until dimension) {
             for (j in 0 until dimension) {
-                if (gridsColor[i][j] == NO_COLOR) {
-                    continue
-                }
-                if (gridsColor[i][j] == aiColor) {
-                    score += gridsSize[i][j]
-                } else {
-                    score -= gridsSize[i][j]
+                when (gridsColor[i][j]) {
+                    aiColor -> score += gridsSize[i][j]
+                    playerColor -> score -= gridsSize[i][j]
                 }
             }
         }
@@ -273,7 +201,7 @@ class AIPlayer(gameSetting: GameSetting) {
                             playerPeaces,
                             depth - 1,
                             playerColor,
-                            mScore,
+                            maxEval.second,
                             minScore
                         )
                         eGrids[i][j] -= multiplier * aiColor

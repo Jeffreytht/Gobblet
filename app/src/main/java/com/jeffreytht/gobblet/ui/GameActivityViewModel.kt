@@ -44,15 +44,14 @@ class GameActivityViewModel(
     private val gridAdapter: GridAdapter
     private val peacesAdapterMap = HashMap<@Peace.Color Int, PeacesAdapter>()
     private val game: Game = Game(gameSetting)
-
-    var observableTitle = ObservableField<String>()
-    var observableTitleColor = ObservableField(R.color.white)
+    val observableTitle = ObservableField<String>()
+    val observableTitleColor = ObservableField(R.color.white)
 
     init {
         adUtil.startLoad()
         gridAdapter = GridAdapter(game.grids, this, resourcesProvider)
-        for ((color, _) in game.peaces) {
-            peacesAdapterMap[color] = PeacesAdapter(game.peaces[color]!!, this, resourcesProvider)
+        for ((color, peaces) in game.peaces) {
+            peacesAdapterMap[color] = PeacesAdapter(peaces, this, resourcesProvider)
         }
         newGame()
         game.registerGameInteractor(gridAdapter)
@@ -62,8 +61,8 @@ class GameActivityViewModel(
     private fun newGame() {
         game.reset()
         gridAdapter.resetData()
-        for ((color, _) in game.peaces) {
-            peacesAdapterMap[color]?.resetData()
+        for ((_, adapter) in peacesAdapterMap) {
+            adapter.resetData()
         }
         adUtil.showAds()
     }
@@ -112,7 +111,10 @@ class GameActivityViewModel(
                     observableTitle.set(
                         resourcesProvider.getString(
                             R.string.player_turn,
-                            resourcesProvider.getString(if (it == GREEN) R.string.green else R.string.red)
+                            when (it) {
+                                GREEN -> resourcesProvider.getString(R.string.green)
+                                else -> resourcesProvider.getString(R.string.red)
+                            }
                         )
                     )
                 }
@@ -154,7 +156,7 @@ class GameActivityViewModel(
                         }
                     }
 
-                    return@flatMapCompletable Observable.fromIterable(lines)
+                    Observable.fromIterable(lines)
                         .concatMap {
                             Observable.just(it).delay(LINE_COLOR_DELAY, TimeUnit.MILLISECONDS)
                         }
@@ -217,7 +219,9 @@ class GameActivityViewModel(
                             observableTitleColor.set(R.color.yellow)
                             observableTitle.set(winnerMessage)
                             binding.textViewNewGame.isClickable = true
-                        }.toList().ignoreElement()
+                        }
+                        .toList()
+                        .ignoreElement()
                 }.subscribe()
         )
     }
@@ -248,9 +252,7 @@ class GameActivityViewModel(
             .getWinnerObservable()
             .firstElement()
             .filter { it == Winner.NO_WINNER }
-            .flatMap {
-                game.getPlayerTurnObservable().firstElement()
-            }
+            .flatMap { game.getPlayerTurnObservable().firstElement() }
             .filter { !(gameSetting.mode == Game.SINGLE_PLAYER && it == aiPlayer.aiColor) }
             .map {
                 if (it != peace.color) {
