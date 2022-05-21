@@ -30,7 +30,7 @@
             android:textSize="32sp"
             android:textStyle="bold"
             ads:autoSizeTextType="uniform"
-            ads:layout_constraintEnd_toStartOf="@+id/textView5"
+            ads:layout_constraintEnd_toStartOf="@+id/textViewNewGame"
             ads:layout_constraintHorizontal_weight="2"
             ads:layout_constraintStart_toEndOf="@+id/imageView6"
             app:layout_constraintTop_toTopOf="parent" />
@@ -92,7 +92,7 @@
             ads:srcCompat="@drawable/ic_back" />
 
         <TextView
-            android:id="@+id/textView5"
+            android:id="@+id/textViewNewGame"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"

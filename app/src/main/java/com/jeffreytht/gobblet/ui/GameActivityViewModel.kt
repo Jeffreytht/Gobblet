@@ -127,6 +127,7 @@ class GameActivityViewModel(
                 .distinctUntilChanged()
                 .filter { it != Winner.NO_WINNER }
                 .flatMapCompletable { winner ->
+                    binding.textViewNewGame.isClickable = false
                     val lines = ArrayList<Pair<Int, Int>>()
                     when (winner.line) {
                         Winner.ROW -> {
@@ -213,6 +214,7 @@ class GameActivityViewModel(
                             resourcesProvider.makeToast(winnerMessage, Toast.LENGTH_SHORT)
                             observableTitleColor.set(R.color.yellow)
                             observableTitle.set(winnerMessage)
+                            binding.textViewNewGame.isClickable = true
                         }.toList().ignoreElement()
                 }.subscribe()
         )
