@@ -81,9 +81,11 @@ class GameActivityViewModel(
                         R.drawable.ic_green_large_peace,
                         R.string.yes,
                         R.string.no,
-                    ) { _: DialogInterface, _: Int ->
+                    ) { _: DialogInterface, button: Int ->
                         soundUtil.play(Sound.CLICK)
-                        newGame()
+                        if (button == DialogInterface.BUTTON_POSITIVE) {
+                            newGame()
+                        }
                     }
                 } else {
                     newGame()
