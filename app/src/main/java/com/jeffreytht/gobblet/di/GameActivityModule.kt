@@ -17,11 +17,8 @@ import dagger.Provides
 abstract class GameActivityModule {
     companion object {
         @Provides
-        fun providesAIPlayer(
-            gameSetting: GameSetting,
-            resourcesProvider: ResourcesProvider
-        ): AIPlayer {
-            return AIPlayer(gameSetting, resourcesProvider)
+        fun providesAIPlayer(gameSetting: GameSetting): AIPlayer {
+            return AIPlayer(gameSetting)
         }
 
         @Provides
