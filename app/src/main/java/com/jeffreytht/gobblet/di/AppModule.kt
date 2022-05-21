@@ -1,6 +1,7 @@
 package com.jeffreytht.gobblet.di
 
 import android.app.Application
+import com.jeffreytht.gobblet.util.AdUtil
 import com.jeffreytht.gobblet.util.ResourcesProvider
 import com.jeffreytht.gobblet.util.SharedPreferenceUtil
 import com.jeffreytht.gobblet.util.SoundUtil
@@ -30,6 +31,12 @@ abstract class AppModule {
         @Provides
         fun providesSharedPreferenceUtil(application: Application): SharedPreferenceUtil {
             return SharedPreferenceUtil(application)
+        }
+
+        @Singleton
+        @Provides
+        fun providesAdUtil(application: Application): AdUtil {
+            return AdUtil(application)
         }
     }
 }

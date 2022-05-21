@@ -14,7 +14,8 @@ class GameActivityViewModelFactory(
     private val aiPlayer: AIPlayer,
     private val soundUtil: SoundUtil,
     private val navigator: Navigator,
-    private val adUtil: AdUtil
+    private val adUtil: AdUtil,
+    private val adsCallback: AdsCallback
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -26,7 +27,8 @@ class GameActivityViewModelFactory(
             dialogBuilder,
             aiPlayer,
             navigator,
-            adUtil
+            adUtil,
+            adsCallback
         ) as T
     }
 }

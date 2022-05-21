@@ -1,60 +1,63 @@
 package com.jeffreytht.gobblet.util
 
 import android.app.Activity
-import android.util.Log
+import android.content.Context
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.jeffreytht.gobblet.MyApp
 import com.jeffreytht.gobblet.R
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
-class AdUtil(private val activity: Activity) {
-    private var mInterstitialAd: InterstitialAd? = null
+class AdUtil(private val context: Context) {
+    private var adsCount: Int = 0
+    private var interstitialAd: InterstitialAd? = null
+    private var disposable = CompositeDisposable()
 
-    fun startLoad() {
-        InterstitialAd.load(
-            activity,
-            activity.getString(R.string.GOOGLE_ADMOB_INTERSTITIAL_UNIT_ID),
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.d("AdError", adError.message)
-                    mInterstitialAd = null
-                    startLoad()
-                }
+    fun loadAds() {
+        disposable.add(Single.create<InterstitialAd> {
+            InterstitialAd.load(
+                context,
+                context.getString(R.string.GOOGLE_ADMOB_INTERSTITIAL_UNIT_ID),
+                AdRequest.Builder().build(),
+                object : InterstitialAdLoadCallback() {
+                    override fun onAdFailedToLoad(adError: LoadAdError) {
+                        it.onError(Throwable(adError.message))
+                    }
 
-                override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    mInterstitialAd = interstitialAd
-                    mInterstitialAd?.fullScreenContentCallback =
-                        object : FullScreenContentCallback() {
-                            override fun onAdDismissedFullScreenContent() {
-                                Log.d("AdError", "Ad was dismissed.")
-                            }
-
+                    override fun onAdLoaded(ads: InterstitialAd) {
+                        it.onSuccess(ads)
+                        ads.fullScreenContentCallback = object :
+                            FullScreenContentCallback() {
                             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                Log.d("AdError", "Ad failed to show.")
+                                interstitialAd = null
                             }
 
                             override fun onAdShowedFullScreenContent() {
-                                Log.d("AdError", "Ad showed fullscreen content.")
-                                mInterstitialAd = null
-                                startLoad()
+                                interstitialAd = null
                             }
                         }
-                }
-            })
+                    }
+                })
+        }
+            .retry()
+            .doOnSuccess { interstitialAd = it }
+            .subscribe()
+        )
     }
 
-    fun showAds() {
-        (activity.application as MyApp).apply {
-            if (adsCount % 5 == 0) {
-                mInterstitialAd?.show(activity)
-            }
-            adsCount++
-            adsCount %= 5
+    fun showAds(activity: Activity) {
+        interstitialAd?.show(activity)
+        adsCount = (adsCount + 1) % 5
+        if (adsCount % 5 == 0) {
+            loadAds()
         }
     }
+}
+
+interface AdsCallback {
+    fun showAds(adUtil: AdUtil)
 }

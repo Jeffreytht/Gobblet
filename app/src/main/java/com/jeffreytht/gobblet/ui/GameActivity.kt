@@ -3,10 +3,12 @@ package com.jeffreytht.gobblet.ui
 import android.os.Bundle
 import com.google.android.gms.ads.MobileAds
 import com.jeffreytht.gobblet.databinding.GameActivityBinding
+import com.jeffreytht.gobblet.util.AdUtil
+import com.jeffreytht.gobblet.util.AdsCallback
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 
-class GameActivity : DaggerAppCompatActivity() {
+class GameActivity : DaggerAppCompatActivity(), AdsCallback {
     companion object {
         const val GOBBLET_MODE = "GOBBLET_MODE"
     }
@@ -29,5 +31,9 @@ class GameActivity : DaggerAppCompatActivity() {
     override fun onDestroy() {
         viewModel.onDestroy()
         super.onDestroy()
+    }
+
+    override fun showAds(adUtil: AdUtil) {
+        adUtil.showAds(this)
     }
 }

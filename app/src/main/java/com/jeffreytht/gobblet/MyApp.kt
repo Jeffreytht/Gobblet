@@ -3,6 +3,7 @@ package com.jeffreytht.gobblet
 import com.jeffreytht.gobblet.di.AppComponent
 import com.jeffreytht.gobblet.di.AppDependencies
 import com.jeffreytht.gobblet.di.DaggerAppComponent
+import com.jeffreytht.gobblet.util.AdUtil
 import com.jeffreytht.gobblet.util.DependencyProvider
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
@@ -13,7 +14,13 @@ import kotlin.reflect.KClass
 class MyApp : DaggerApplication(), DependencyProvider {
     @Inject
     lateinit var appComponent: AppComponent
-    var adsCount: Int = -1
+    @Inject
+    lateinit var adUtil: AdUtil
+
+    override fun onCreate() {
+        super.onCreate()
+        adUtil.loadAds()
+    }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
         appComponent = DaggerAppComponent.factory().create(this)

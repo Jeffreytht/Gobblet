@@ -41,7 +41,8 @@ abstract class GameActivityModule {
                     aiPlayer,
                     soundUtil,
                     navigator,
-                    adUtil
+                    adUtil,
+                    gameActivity
                 )
             ).get(
                 GameActivityViewModel::class.java
@@ -68,11 +69,6 @@ abstract class GameActivityModule {
                     Game.SINGLE_PLAYER
                 )
             }
-        }
-
-        @Provides
-        fun providesAdUtil(activity: Activity): AdUtil {
-            return AdUtil(activity)
         }
 
         @Provides
