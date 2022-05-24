@@ -3,13 +3,12 @@ package com.jeffreytht.gobblet.model
 import androidx.annotation.IntDef
 import com.jeffreytht.gobblet.model.Peace.Companion.NO_COLOR
 import io.reactivex.rxjava3.core.Single
-import kotlin.math.pow
 
 class AIPlayer(gameSetting: GameSetting) {
     companion object {
-        const val EASY = 1
-        const val MEDIUM = 2
-        const val HARD = 3
+        const val EASY = 2
+        const val MEDIUM = 3
+        const val HARD = 4
         const val AI_WIN = Int.MAX_VALUE
         const val AI_LOSE = Int.MIN_VALUE
     }
@@ -56,17 +55,17 @@ class AIPlayer(gameSetting: GameSetting) {
      * Integer -> 1201
      */
     private fun encodeGrid(grids: ArrayList<ArrayList<Grid>>): ArrayList<ArrayList<Int>> {
-        val newGrids = ArrayList<ArrayList<Grid>>()
+        val newGrids = ArrayList<ArrayList<Grid>>(dimension)
         for (i in 0 until dimension) {
-            newGrids.add(ArrayList())
+            newGrids.add(ArrayList(dimension))
             for (j in 0 until dimension) {
                 newGrids[i].add(grids[i][j].deepCopy())
             }
         }
 
-        val res = ArrayList<ArrayList<Int>>()
+        val res = ArrayList<ArrayList<Int>>(dimension)
         for (i in 0 until dimension) {
-            res.add(ArrayList())
+            res.add(ArrayList(dimension))
             for (j in 0 until dimension) {
                 var encodedInt = 0
                 while (newGrids[i][j].peaces.isNotEmpty()) {
@@ -88,84 +87,88 @@ class AIPlayer(gameSetting: GameSetting) {
     }
 
     private fun getScore(grids: ArrayList<ArrayList<Int>>): Int {
-        val gridsColor = ArrayList<ArrayList<@Peace.Color Int>>()
-        val gridsSize = ArrayList<ArrayList<Int>>()
+        val gridsColor = ArrayList<ArrayList<@Peace.Color Int>>(dimension)
+        val gridsSize = ArrayList<ArrayList<Int>>(dimension)
+        var score = 0
+
         for (i in 0 until dimension) {
-            gridsColor.add(ArrayList())
-            gridsSize.add(ArrayList())
+            gridsColor.add(ArrayList(dimension))
+            gridsSize.add(ArrayList(dimension))
             for (j in 0 until dimension) {
                 val (color, size) = getFirstPeace(grids[i][j])
                 gridsColor[i].add(color)
                 gridsSize[i].add(size)
+                when (color) {
+                    aiColor -> score += size
+                    playerColor -> score -= size
+                }
             }
         }
 
-        // Check row
         for (i in 0 until dimension) {
-            with(HashSet<Int>()) {
-                for (j in 0 until dimension) {
-                    add(gridsColor[i][j])
+            // Row
+            for (j in 1 until dimension) {
+                val currGridColor = gridsColor[i][j]
+                if (gridsColor[i][j - 1] != currGridColor || currGridColor == NO_COLOR) {
+                    break
                 }
-                if (size == 1 && first() != NO_COLOR) {
-                    when (first()) {
+
+                if (j == dimension - 1) {
+                    when (currGridColor) {
                         aiColor -> return AI_WIN
                         playerColor -> return AI_LOSE
                     }
                 }
             }
-        }
 
-        // Check col
-        for (i in 0 until dimension) {
-            with(HashSet<Int>()) {
-                for (j in 0 until dimension) {
-                    add(gridsColor[j][i])
+            // Col
+            for (j in 1 until dimension) {
+                val currGridColor = gridsColor[j][i]
+                if (gridsColor[j - 1][i] != currGridColor || currGridColor == NO_COLOR) {
+                    break
                 }
-                if (size == 1 && first() != NO_COLOR) {
-                    when (first()) {
+
+                if (j == dimension - 1) {
+                    when (currGridColor) {
                         aiColor -> return AI_WIN
                         playerColor -> return AI_LOSE
                     }
                 }
             }
-        }
 
-        // Check diagonal
-        with(HashSet<Int>()) {
-            for (i in 0 until dimension) {
-                add(gridsColor[i][i])
-            }
-            if (size == 1 && first() != NO_COLOR) {
-                when (first()) {
-                    aiColor -> return AI_WIN
-                    playerColor -> return AI_LOSE
+            // Check diagonal
+            if (i == 0) {
+                for (j in 1 until dimension) {
+                    val currGridColor = gridsColor[j][j]
+                    if (gridsColor[j - 1][j - 1] != currGridColor || currGridColor == NO_COLOR) {
+                        break
+                    }
+
+                    if (j == dimension - 1) {
+                        when (currGridColor) {
+                            aiColor -> return AI_WIN
+                            playerColor -> return AI_LOSE
+                        }
+                    }
                 }
-            }
-        }
 
-        // Check diagonal
-        with(HashSet<Int>()) {
-            for (i in 0 until dimension) {
-                add(gridsColor[i][dimension - i - 1])
-            }
-            if (size == 1) {
-                when (first()) {
-                    aiColor -> return AI_WIN
-                    playerColor -> return AI_LOSE
+                for (j in 1 until dimension) {
+                    val currGridColor = gridsColor[j][dimension - j - 1]
+                    if (gridsColor[j - 1][dimension - j] != currGridColor || currGridColor == NO_COLOR) {
+                        break
+                    }
+
+                    if (j == dimension - 1) {
+                        when (currGridColor) {
+                            aiColor -> return AI_WIN
+                            playerColor -> return AI_LOSE
+                        }
+                    }
                 }
             }
         }
 
         // TIE
-        var score = 0
-        for (i in 0 until dimension) {
-            for (j in 0 until dimension) {
-                when (gridsColor[i][j]) {
-                    aiColor -> score += gridsSize[i][j]
-                    playerColor -> score -= gridsSize[i][j]
-                }
-            }
-        }
         return score
     }
 
@@ -188,33 +191,31 @@ class AIPlayer(gameSetting: GameSetting) {
             var maxEval = Pair(0, Int.MIN_VALUE)
             for (i in 0 until dimension) {
                 for (j in 0 until dimension) {
-                    for (k in dimension - 1 downTo 0) {
-                        val multiplier = 10f.pow(k).toInt()
-                        if (aiPeaces / multiplier % 10 == 0 || !canMove(multiplier, eGrids[i][j])) {
-                            continue
-                        }
+                    if (aiPeaces > 0) {
+                        val (_, size) = getFirstPeace(aiPeaces)
+                        if (canMove(size, eGrids[i][j])) {
+                            eGrids[i][j] += size * aiColor
+                            val eval = minimax(
+                                eGrids,
+                                aiPeaces - size,
+                                playerPeaces,
+                                depth - 1,
+                                playerColor,
+                                maxEval.second,
+                                minScore
+                            )
+                            eGrids[i][j] -= size * aiColor
 
-                        eGrids[i][j] += multiplier * aiColor
-                        val eval = minimax(
-                            eGrids,
-                            aiPeaces - multiplier,
-                            playerPeaces,
-                            depth - 1,
-                            playerColor,
-                            maxEval.second,
-                            minScore
-                        )
-                        eGrids[i][j] -= multiplier * aiColor
+                            if (eval.second > maxEval.second ||
+                                eval.second == maxEval.second && eval.first > maxEval.first
+                            ) {
+                                maxEval = eval
+                                mScore = maxEval.second
+                            }
 
-                        if (eval.second > maxEval.second ||
-                            eval.second == maxEval.second && eval.first > maxEval.first
-                        ) {
-                            maxEval = eval
-                            mScore = maxEval.second
-                        }
-
-                        if (minScore <= mScore) {
-                            return maxEval
+                            if (minScore <= mScore) {
+                                return maxEval
+                            }
                         }
                     }
 
@@ -253,6 +254,7 @@ class AIPlayer(gameSetting: GameSetting) {
                                 return maxEval
                             }
                         }
+
                     }
                 }
             }
@@ -263,33 +265,31 @@ class AIPlayer(gameSetting: GameSetting) {
         var minEval = Pair(0, Int.MAX_VALUE)
         for (i in 0 until dimension) {
             for (j in 0 until dimension) {
-                for (k in dimension - 1 downTo 0) {
-                    val multiplier = 10f.pow(k).toInt()
-                    if (playerPeaces / multiplier % 10 == 0 || !canMove(multiplier, eGrids[i][j])) {
-                        continue
-                    }
+                if (playerPeaces > 0) {
+                    val (_, size) = getFirstPeace(playerPeaces)
+                    if (canMove(size, eGrids[i][j])) {
+                        eGrids[i][j] += size * playerColor
+                        val eval = minimax(
+                            eGrids,
+                            aiPeaces,
+                            playerPeaces - size,
+                            depth - 1,
+                            aiColor,
+                            maxScore,
+                            mScore
+                        )
+                        eGrids[i][j] -= size * playerColor
 
-                    eGrids[i][j] += multiplier * playerColor
-                    val eval = minimax(
-                        eGrids,
-                        aiPeaces,
-                        playerPeaces - multiplier,
-                        depth - 1,
-                        aiColor,
-                        maxScore,
-                        mScore
-                    )
-                    eGrids[i][j] -= multiplier * playerColor
+                        if (eval.second < minEval.second ||
+                            eval.second == minEval.second && eval.first > minEval.first
+                        ) {
+                            minEval = eval
+                            mScore = minEval.second
+                        }
 
-                    if (eval.second < minEval.second ||
-                        eval.second == minEval.second && eval.first > minEval.first
-                    ) {
-                        minEval = eval
-                        mScore = minEval.second
-                    }
-
-                    if (mScore <= maxScore) {
-                        return minEval
+                        if (mScore <= maxScore) {
+                            return minEval
+                        }
                     }
                 }
 
@@ -355,39 +355,34 @@ class AIPlayer(gameSetting: GameSetting) {
 
         for (i in 0 until dimension) {
             for (j in 0 until dimension) {
-                for (k in dimension - 1 downTo 0) {
-                    val multiplier = 10f.pow(k).toInt()
-                    if (aiPeaces / multiplier % 10 == 0 || !canMove(multiplier, eGrids[i][j])) {
-                        continue
-                    }
-
-                    eGrids[i][j] += multiplier * aiColor
-                    val eval = minimax(
-                        eGrids,
-                        aiPeaces - multiplier,
-                        playerPeaces,
-                        difficulty - 1,
-                        playerColor,
-                        Int.MIN_VALUE,
-                        Int.MAX_VALUE
-                    )
-                    eGrids[i][j] -= multiplier * aiColor
-
-                    if (eval.second < maxEval.second) {
-                        continue
-                    }
-
-                    if (eval.second > maxEval.second || eval.first > maxEval.first) {
-                        moves.clear()
-                        maxEval = eval
-                    }
-
-                    moves.add(
-                        Pair(
-                            peaces[aiColor]!!.find { it.size == multiplier }!!,
-                            grids[i][j]
+                if (aiPeaces > 0) {
+                    val (_, size) = getFirstPeace(aiPeaces)
+                    if (canMove(size, eGrids[i][j])) {
+                        eGrids[i][j] += size * aiColor
+                        val eval = minimax(
+                            eGrids,
+                            aiPeaces - size,
+                            playerPeaces,
+                            difficulty - 1,
+                            playerColor,
+                            Int.MIN_VALUE,
+                            Int.MAX_VALUE
                         )
-                    )
+                        eGrids[i][j] -= size * aiColor
+
+                        if (eval.second >= maxEval.second) {
+                            if (eval.second > maxEval.second || eval.first > maxEval.first) {
+                                moves.clear()
+                                maxEval = eval
+                            }
+                            moves.add(
+                                Pair(
+                                    peaces[aiColor]!!.find { it.size == size }!!,
+                                    grids[i][j]
+                                )
+                            )
+                        }
+                    }
                 }
 
                 for (k in 0 until dimension) {
