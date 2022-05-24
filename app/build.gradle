@@ -56,7 +56,6 @@ def rxJava_version = "3.1.4"
 def rxAndroid_version = "3.0.0"
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
@@ -71,4 +70,6 @@ dependencies {
 
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 }
